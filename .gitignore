@@ -5,3 +5,4 @@ articles/*
 packrat/lib*/
 models/*
 .Rproj.user
+.ipynb_checkpoints/*

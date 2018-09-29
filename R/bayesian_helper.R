@@ -86,6 +86,7 @@ pp_plot <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
   # number of datasets
   n <- dim(pp_plot_data)[2]
   pp_plot_data <- select(pp_plot_data, sample(1:n, sample_number, replace = F))
+  p_title <- glue("family:{as.character(model$family)[1]}, {y_name}")
   p <- pp_plot_data %>%
         gather %>%
         ggplot(aes(value, group = key)) +
@@ -93,7 +94,7 @@ pp_plot <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
         scale_color_discrete(guide = F) +
         geom_density(data = model$data, aes_q(as.name(y_name), group = "none"), size = 1.5) +
         xlim(c(lower, upper)) +
-        ggtitle(as.character(model$family)[1])
+        ggtitle(p_title)
 }
 
 
@@ -110,6 +111,7 @@ pp_plot_v <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
   # number of datasets
   n <- dim(pp_plot_data)[2]
   pp_plot_data <- select(pp_plot_data, sample(1:n, sample_number, replace = F))
+  p_title <- glue("family:{as.character(model$family)[1]}, {y_name}")
   p <- pp_plot_data %>%
         gather %>%
         ggplot(aes(key, value, group = key)) +
@@ -119,7 +121,7 @@ pp_plot_v <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
         geom_violin(data = model$data, aes_q(0, as.name(y_name), group = "none"), color = "firebrick") +
         geom_boxplot(data = model$data, aes_q(0, as.name(y_name), group = "none"), width = 0.08, outlier.size = 0.5) +
         coord_flip() +
-        ggtitle(as.character(model$family)[1])
+        ggtitle(p_title)
 }
 
 # use violin + points for pp check
@@ -135,6 +137,7 @@ pp_plot_v2 <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
   # number of datasets
   n <- dim(pp_plot_data)[2]
   pp_plot_data <- select(pp_plot_data, sample(1:n, sample_number, replace = F))
+  p_title <- glue("family:{as.character(model$family)[1]}, {y_name}")
   p <- pp_plot_data %>%
         gather %>%
         ggplot(aes(key, value, group = key)) +
@@ -145,7 +148,7 @@ pp_plot_v2 <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
         geom_jitter(data = model$data, aes_q(0, as.name(y_name), group = "none"), alpha = 0.5, width = 0.1) +
         ylim(c(lower, upper)) +
         coord_flip() +
-        ggtitle(as.character(model$family)[1])
+        ggtitle(p_title)
 }
 
 
