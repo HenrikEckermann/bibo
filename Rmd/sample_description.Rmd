@@ -1,0 +1,418 @@
+---
+title: "Provide overview for major research project"
+output:
+  html_document:
+    df_print: paged
+    theme: default
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    collapsed: false
+---
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE)
+```
+
+
+
+# What this document is about 
+
+This document has two parts.  
+
+In part I, I provide information about which of the BIBO stool samples have been examined in previous publications (A). I then describe some of the variables available (B) and try to come up with topic suggestions for the thesis (C) and for a blog post (D). But the priority for now certainly is to find a topic for the thesis. So you can ignore D for now to save time.
+
+In the second part of this document I intend to give you information you might need to think about possibilities. I check how many stool samples we have per time point. This is followed by checking how many complete cases for a series of time points we have. This might be helpful in setting limits about what is possible for the project. The R script is in the R folder of the provided project in case you want to check different things.
+
+To save time, you might want to start reading the topic suggestions. Then scroll through the headings and see if one of the headings relates to a question you have. 
+
+# Part I
+
+## A) Publications that included the HITChip data from the BIBO study
+
+_You find for each study which samples they looked at as described in the publication. Links are to abstracts. Full publication available in the folder "publications"_
+
+1. [Childhood BMI in relation to microbiota in infancy and lifetime antibiotic use](https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-017-0245-y)  
+
+    **Time point(s):**   
+    11 weeks (this should correspond to 75 days (see part II))
+
+2. [Significant Correlation Between the Infant Gut Microbiome and Rotavirus Vaccine Response in Rural Ghana](https://academic.oup.com/jid/article/215/1/34/2420594)  
+
+    **Time point(s):**   
+    28 days   
+
+3. [Rotavirus vaccine response correlates with the infant gut microbiota composition in Pakistan](https://www.tandfonline.com/loi/kgmi20)  
+
+    Stool samples selected based on age (age-matched with the children from Pakistan) were used as controls and to test whether microbiota compositions predict vaccine responses.
+
+4. [Maternal prenatal stress is associated with the infant intestinal microbiota](https://www.sciencedirect.com/science/article/pii/S0306453015000207)  
+    **Time point(s):**  
+    Mean (SD) days postpartum: 6.7 (0.7), 12.5 (4.0), 24.8 (8.9), 83.8 (19.4), and 112.3 (15.4)
+
+5. [Intestinal Microbiota of Infants With Colic: Development and Specific Signatures](http://pediatrics.aappublications.org/content/131/2/e550)  
+
+    **Time point(s):**   
+    28 days, 11 weeks and/or 4 months
+
+    Infant crying was used as indicator for infant colic. They compared the lowest and highest quartile (12 infants who cried most to 12 infants who cried least).
+
+## B) Potential variables of interest  
+
+### 1) Biological variables
+
+
+ 
+
+#### 1.1 Cortisol reactivity at 6 years
+
+*Described in [Associations between circadian and stress response cortisol in children](https://www.tandfonline.com/doi/full/10.1080/10253890.2016.1276165)*
+
+
+149 6 old children participated. 5 were excluded due to "irregularities in the cortisol sample" (missing samples, time points missed, medication interfering with cortisol level). The measurement included a social evaluative stress test (CREST). During that test, 6 saliva samples were taken to evaluate the increase in cortisol after exposure to the stressor.
+
+**Time points:**  
+6 years 
+
+
+
+#### 1.2 Cortisol reactivity in the first year 
+
+*Bathing session and vaccination as stressor described in [Solitary sleeping in young infants is associated with heightened cortisol reactivity to a bathing session but not to a vaccination](https://www.ncbi.nlm.nih.gov/pubmed/21530088). Stranger situation procedure described in [Differential associations between behavioral and cortisol responses to a stressor in securely versus insecurely attached infants](https://www.sciencedirect.com/science/article/pii/S0166432816307689?via%3Dihub).*
+
+Similar to 1.1 but in the first year of life. Different stressors were used as listed under time points. 
+
+**Time points:** 
+5 weeks: Bathing session   
+2 months: vaccination  
+5 months: SF (not sure what this means)   
+12 months: 
+
+
+
+
+#### 1.3 Circadian Cortisol
+ 
+Mothers took saliva samples from their infants at pre defined time points (5 time points and for some later measurements 4 time points) at 2 (preferably consecutive) days within a week. This data has been used and described in [Development of the cortisol circadian rhythm in the light of stress early in life](https://www.psyneuen-journal.com/article/S0306-4530(15)00897-5/fulltext)  
+
+The 4 (5) measurements were taken at times:  
+
+T1: immediately after the child woke up  
+T2: 11:00 h  
+T3: 15:00 h  
+T4: 19:00 h   
+(T5: 21:00 h)   
+
+**Time points:**    
+2 months, 12 months, 2.5 years, 6 years, 10 years  
+
+
+
+
+#### 1.4 Breastfeeding, formula feeding and childcare
+These are the variables we use for the childcare paper. The raw data is as follows: For each mother-infant dyad, the average number of breastfeedings per day for one week has been noted. This means that if an infant had 3 breastfeedings on Monday, 4 breastfeedings on Tuesday and 0 on the other weekdays, the value noted there for this week would be (1x3 + 1x4 + 5x0)/7 = 1. So, we do not have the information whether an infant had 7 feedings on one day and 0 on the others or one feeding each day etc..
+
+We have the same kind of information for formula feeding. This raw data is stored in an excel sheet (one for each subject), which I preprocessed (without further loss of information of interest) for Gerben Hermes. In these sheets, there are also some notes on solid foods, whether the infant had contact with a pet in that week and if it was ill (if it was ill there is some limited note next to that describing which illness). 
+
+Gerben created food categories (breastfed, formula fed, mixed fed and also one category with solid food but there were only 2 infants in the latter group). I have all the scripts for the preprocessing of this data in case needed. 
+
+I counted this average number of feedings per week instead. So, I have for each infant the number breastfeedings. Multiplying this by the number of weeks should result in the absolute count then. I calculated that until the start of CC and for the period in CC. Same for formula feeding. Those variables obviously correlate highly (-0.9) causing problems in regression (they mask each other). I therefore created bf-ratio ($\frac{bf feedings}{bf feedings + formula feedings}$). We loose count information here but having seen the excel slides, I tend to think that proportion of bf will be more reliable than the absolute count. 
+
+ 
+
+### 2) Observational/Experimental tests 
+
+#### 2.1 Short term memory assessed with "Memory for digit span" from the Wechsler Intelligent Scale for children
+
+The National Longitudinal Surveys (A Program of the U.S. Bureau of Labor Statistics) describes this test summarized  [here](http://www.nlsinfo.org/site/childya/nlsdocs/guide/assessments/DigitSpan.htm) as follows: 
+
+>There are two parts to the Memory for Digit Span assessment: Digits Forward and Digits Backward. Digit Span Forward and Digit Span Backward tap distinct but interdependent cognitive functions. Digits Forward primarily taps short-term auditory memory while Digits Backward measures the child's ability to manipulate verbal information while in temporary storage.
+
+> This assessment generates three "raw" scores and one overall age-appropriate normed (standard) score. ... 
+
+>...the Digit Span assessment is normed against a distribution that has a mean of 10 and a standard deviation of 3.  Norms are only available for the total score.  
+
+**Time point(s):**  
+10 years
+
+#### 2.2 Temperament 
+
+##### 2.2.1. Eisenberg's Puzzle box   
+Described for example in [Measures of Effortful Regulation for Young Children](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2121588/). This is meant to be a measure of _effortful control_ (EC), which is defined as  
+
+>“the efficiency of executive attention, including the ability to inhibit a dominant response and/or to activate a subdominant response, to plan, and to detect errors”. 
+
+The test is described as...
+
+> a puzzle box task that probably assesses a combination of attentional persistence, inhibitory control, and impulsivity.
+
+and that... 
+
+>fairly consistently correlates with parents’ and teachers’ reports of children’s EC (on Rothbart’s Child Behavior Questionnaire, 2001) and groups with these reports on a latent construct in structural equation modeling, especially prior to adolescence... 
+
+
+**Time points:**  
+6 years
+
+
+##### 2.2.2 Go-NoGo task   
+
+I need to ask for more specific information about our Go-NoGo task (could not find it in any of the papers). In general it is a computerized test used to assess inhibitory (motor) control. Each trial consists of one stimulus either indicating either "Go" (respond) or "No-Go". It is tried to elicit motor activity, which then sometimes has to be inhibited. The response accuracy of each trial is used as a measure for inhibitory control.
+
+
+**Time points:**  
+10 years
+
+##### 2.2.3. Stroop task
+
+As for the go nogo task I need to ask for the specific information for our test. The task in general is to read a colored text (e.g. the word "green" printed in the color "yellow") and the respond the written color. Using this paradigm, we try to assess an individual’s cognitive processing speed, their attentional capacity, and their level of cognitive control (executive function).
+
+**Time points:**  
+10 years
+
+##### 2.2.4 Balloon Analogue Risk Task (BART)
+
+The Balloon Analogue Risk Task (BART) is a computerized decision-making task that provides a test of behavioral risk taking.
+ 
+
+**Time points:**  
+10 years
+
+**Side note:**  
+A [quick search](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4244869/) indicated a test-retest reliability of 0.77 for this test.
+
+
+### 3) Questionnaires
+
+#### 3.1 Behavior (at school)
+
+
+Behavior at school has been measured using teacher ratings as described in [Cortisol stress responses and children's behavioral functioning at school](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5324537/) using:    
+1. TRF (Aschenbach, 1991): 119 items (3-point scale). This scale has subscales for internalizing and externalizing behavior (cronbach's $\alpha$ > 0.88)  
+2. 10-item subscale of the Preschool Social Behavior Questionnaire (PSBQ), where each item is rated on a 4-point scale (cronbach's $\alpha$ > 0.93)
+
+**Time point(s):**  
+
+6 years
+
+**Note:**  
+Behavioral problems have also been evaluated by mothers and childcarecenter more frequently using the Child Behavior Checklist (CBCL 1.5–5; Achenbach & Rescorla, 2000)
+
+
+
+#### 3.2 Infant Temperament
+
+##### 3.2.1 (IBQ-R): 
+
+*Was part of the measurement in [Early non-parental care and toddler behaviour problems: Links with temperamental negative affectivity and inhibitory control](https://www.sciencedirect.com/science/article/pii/S0885200613000562)*
+
+Accesses 11 dimensions of temperament in the lifetime between 3 and 12 months. Mothers have to evaluate infant behavior in different situations (feeding, sleeping, bathing/taking cloth on, playing, daily activities, comforting)
+
+7-point scale questionnaire where the frequency of behaviors are indicated by the mother as occurring:
+
+1. never
+2. almost never
+3. less than half of the time
+4. ca. half of the time
+5. more than half of the time
+6. almost always
+7. always
+8. not applicable)
+
+**Time points:** 
+
+3 months, 6 months, 12 months 
+
+##### 3.2.2 Early Childhood Behaviour Questionnaire (ECBQ) from  (Putnam, 2006)
+
+Similar questionnaire accessing temperament but adapted to older age.
+
+**Time points**  
+2.5 years
+
+
+##### 3.2.3  Childhood Behaviour Questionnaire (CBQ)
+
+Similar questionnaire accessing temperament but adapted to older age.
+
+**Time points**  
+4 years
+
+
+
+##### 3.2.4  Temperament in Middle Childhood Questionnaire (TMCQ)
+
+Another assessment of temperament specifically for the period of the middle childhood.
+
+**Time points**  
+8 years
+
+
+
+##### 3.2.5  Other questionnaires 
+
+There are more questionnaires and I stopped looking closer at all of them to save time. I would look closer at any if you want to have more information or if we start to think in that direction.  
+
+
+- BITSEA: Brief Infant Toddler Social Emotional Assessment (maternal and teacher report to assess social and emotional characteristics)
+- CBCL: Child Behavior Checklist (maternal and teacher report to assess behavioral problems)
+- SASC-R: Social Anxiety Scale for Children (La Greca & Stone 1993, adapted to maternal report)
+
+
+
+## C) Topic suggestions
+
+I could come up with two topic suggestions. 
+
+### 1) Cortisol and gut microbiota composition  
+These days, "replication" of previous findings seems just as (if not more) important to me than describing something for the first time. In that sense it might be interesting to look at the relationship between gut microbiota composition and cortisol reactivity and/or circadian cortisol. I set _replication_ in quotation marks because we could not replicate any experiment I have in my mind exactly (closest to that would be the study of Hantsoo et al, which we could maybe replicate by using the BINGO data (depends on how we measured cortisol reactivity)).  
+
+A relationship between gut microbes and the HPA-axis development/functioning has long been suggested by animal studies (mostly rodent and mice). [Mudd et. al (2017)](https://www.tandfonline.com/doi/full/10.1080/19490976.2017.1353849) recently found that _Ruminococcus_ as measured by 16S rRNA gene sequencing negatively predicted serum cortisol in 30d old piglets. They interpreted their analyses (stepwise regression, mediation analyses) such that bacteria invoke changes in the brain (Neurometabolites as measured via MRI) via cortisol.
+
+Human studies that looked at this relationship are e.g.:  
+[Schmidt et. al (2015)](https://link.springer.com/article/10.1007%2Fs00213-014-3810-0) describes that administration of GOS but not FOS for 3 weeks decreased cortisol awakening response (as measured by saliva) in their sample. Also, they mention a decrease in attentional vigilance to negative versus positive information in a dot-probe task after 3 weeks of GOS compared to placebo intake (_Note: In the first year, the BIBO infants are either breastfed (GOS) or formula fed. I checked the brands and the vast majority contained both FOS and GOS (or it could not be determined which extract product was taken). The 6 years old also absolved stress reactivity measure without taking any prebiotic._
+
+Another human study that looked at this relationship: [Hantsoo et al (2018)](https://www.sciencedirect.com/science/article/pii/S000632231830876X) assessed whether cytokine and cortisol response to an acute psychosocial stressor were associated with gut microbiome composition in psychiatrically healthy pregnant women. They found a significant association between cortisol area under the curve (AUC) and unweighted UniFrac distance (p=0.041). Cortisol  AUC was positively associated with differential abundance of _Ruminococcaceae_ (fdr $<$ 0.0001), Prevotella (fdr $<$ 0.0001), _Ruminococcus_ (fdr = 0.04), and negatively with _Bacteroides_ (fdr = 0.006), _Megasphaera_ (fdr = 0.0001), and _Eubacterium_ (fdr = 0.028).
+
+We have the CREST (described in [Cortisol reactions to a social evaluative paradigm in 5- and 6-year-old children](https://www.ncbi.nlm.nih.gov/pubmed/22489730)) with cortisol reactivity measures in the BIBO study. So, this might be comparable to the Trier social stress test (Would you agree with that Carolina?). As noted above, if stress reactivity was measured also using Trier social stress test in the BINGO, we have the data to check if we can confirm their findings in this sample. 
+
+
+**Notes:**  
+In the excel sheet it says we have no cortisol awakening response for the infants in the first year. I remember this is because infants do not yet have this rhythmic (see [Cortisol in the first year of life: Normative values and intra-individual variability](https://www.ncbi.nlm.nih.gov/pubmed/20051312)). Since we cannot control for how much cortisol infants receive via breastmilk, examining a relationship in the first year might be too difficult in the BIBO data?! These were just thoughts I had in relation to that.
+
+
+
+
+
+### 2) Cognitive function and gut microbiota
+[Sarkar et al (2018)](https://www.sciencedirect.com/science/article/pii/S1364661318300974) suggest that cognitive scientists should research the gut microbiota composition in relation to cognitive measures such as memory function and executive function. The line of argumentation is typical: They cite several mice/rodent experiments that indicate a relationship. They mention also weak evidence or better said indicators for humans. 
+ 
+We have the _Memory for digit span_ (short term memory), the Go-NoGo task, the stroop task (inhibition and attention) and maybe the Puzzle box test could also be used here. I would need to do some more research about how well the measurements represent those constructs. But the general question is thus whether we find a relationship between any of these cognitive measurements and gut microbiota composition. A more directional hypothesis (I think) could not be formulated given that Sarkar summarize mainly animal studies and the direction is not consistent across different animal experiments
+
+
+In conclusion, examining the relationship between gut microbiota composition and either cortisol reactivity/circadian rhythm or cognitive functioning could be the topic of our project.
+
+
+
+## D) Blog post suggestion  
+
+This is related to the childcare paper I am working on with Gerben and Carolina. We cannot meet the assumptions for most models. Error variance is not constant across observations and error distribution has long tails and is skewed often. After reading _Statistical Rethinking_ and [Paul Bürkner's vigenette](https://cran.r-project.org/web/packages/brms/vignettes/brms_distreg.html) about distributional models I tried using _BRMS_ to fit those models that should be better suited for our data. Soon I encountered _low bmfi_ and _divergent transitions after warmup_ for some models with more predictors or interactions. I tried the obvious adjustments like stronger regularizing priors, `adapt_delta` and `max_treedepth`, trying different families (gaussian, student and skew_normal) but could not always find a way to fit a specific model. Despite these issues I think this type of model should be suited for many common research questions. I would have several questions if we find time for that in one meeting related to: 1) Decide for family distribution before fitting a model (or would you always first try a family based on maximum entropy and then decide further if models do not converge etc...)? 2) How to deal with more than 3 factor levels if there are also interactions (where you would need to do post hoc tests in frequentist version). I thought discussing this and working out examples would be interesting and helpful.
+
+If we can find some general setting or a "range of settings" (family distribution + priors etc.) that tends to work (e.g. for HITChip data or for NGS data), then this might be something for a blog post?! As far as I understand it, this approach retains/provides more information compared to a simple t-test or a Wilcoxon test. E.g. if you compare diet A to diet B, we could  not only describe/look for a shift in location parameter but also in changes of the variance. I think this would be beneficial for many scientists who try to compare group differences based on a treatment. Since the variance is also modeled, it does not rely on homogeneity of variance for each of the groups and also not on the data being normally distributed (at least we have some options with the families) or independent of each other. We can also check this later after having a more concrete start for the main topic, which currently is more important.
+
+
+
+# Part II
+
+
+
+```{r, fig.show = FALSE, results = "hide"}
+library(here)
+# --------------------------- Data import from Leo
+source(here("R/read.R"))
+```
+
+### What information is in the sample_data?
+```{r}
+# --------------------------- Check how many/which samples per day
+library(knitr)
+library(glue)
+library(tidyverse)
+# What information is there?
+metadata <- sample_data(genus) %>% as.data.frame() %>% distinct(My.SQL.ID, .keep_all = T)
+colnames(metadata)
+```
+
+
+
+
+
+### Subjects that provided more than one sample per time point
+
+I have no insight why that is but for some subjects (see table) we have more than 1 sample per time point.
+
+EDIT:  
+
+I found out that there were multiple equal My.SQL.IDs and after filtering those there only remained 2 subject where we have 2 samples for the 6 year sample.  
+
+```{r}
+# select and rename relevant columns for checking
+meta_sub <- 
+  metadata %>% 
+    mutate(subject_id = str_sub(unique.subjectID, 19,21)) %>%
+    rename(age_days = time) %>%
+    select(subject_id, age_days, sample)
+    
+# Are there subjects with more than one sample per time_point
+multiple_samples <- 
+  group_by(meta_sub, subject_id, age_days) %>% summarise(n = n()) %>%
+  filter(n > 1)
+kable(multiple_samples)
+
+# I will have to ask why that is.
+# For counting, I need to disregard all but one sample per time point.
+# The selection is not based on any information and thus the resulting 
+# dataframes should not be used for analyses without checking why we 
+# have more than one sample and selecting accordingly. 
+
+# show cases where we need to select from
+# filter(meta_sub, subject_id %in% multiple_samples$subject_id) %>%
+#   mutate(no = 1: 55)
+# I write up all but one rownumber for each time point that has more than 1 n
+v_disregard <- c(3, 6)
+samples_disregard <- 
+  filter(meta_sub, subject_id %in% multiple_samples$subject_id) %>%
+  mutate(no = 1: 6) %>% 
+  filter((no %in% v_disregard)) %>%
+  select(sample)
+```
+
+After I selected just one sample per subject per time point, we are left with 783. Here is a table showing number of samples per time point:
+
+```{r}
+# Now we can count how many samples per time point
+meta_sub %>% 
+  filter(!(sample %in% samples_disregard$sample)) %>%
+  group_by(age_days) %>% 
+  summarise(n = n()) %>% kable()
+```
+
+### How many subjects provided a sample for each of the follwing time points:  28, 75, 105 and 2193d?
+
+Finally, assume we wanted to look at the development over several time points for some subjects and we could only do this with complete cases. At the bottom of the R script that I provided, you can check this. There you find the dataframe printed below (*sample_per_d*). 
+
+By changing the columns in the select function (see example below), you will get the number of complete cases for the corresponding time points. For example, there are 68 complete cases if we check time points 28d, 75d, 105d and 2193d or 113 complete cases if we would look at 75d and 105d etc...
+
+```{r}
+# To check how many subjects provided samples for certain time points, I
+# can now create a new df so that we get NA where there is no sample 
+# for a time point
+meta_sub2 <- data_frame(
+  subject_id = rep(unique(meta_sub$subject_id), each = 11),
+  age_days = rep(sort(unique(meta_sub$age_days)), 186)) %>%
+  left_join(meta_sub, by = c("subject_id", "age_days"))
+
+# and now we can create the above mentioned df... 
+sample_per_d <- 
+  filter(meta_sub2, !(sample %in% samples_disregard$sample)) %>%
+  mutate(age_days = glue("d{age_days}")) %>%
+    spread(age_days, sample)
+kable(sample_per_d)
+```
+
+```{r, echo = T}
+# ... and select the time points of interest in the select function and omit 
+# NA. Then by counting the rows we get the value of interest. E.g. for the time
+# points 28 d, 75d, 105, 2193 we have...
+sample_per_d %>%
+  select(subject_id, d28, d75, d105, d2193) %>%
+  na.omit() %>% dim()
+# ... 68 complete cases. It may not be required to work only with complete cases
+# but this might still be informative to decide what we can do.
+```
+
+
+
+```{r}
+# knitr::purl(here("Rmd/sample_description.Rmd"), here("R/sample_description.R"))
+```
