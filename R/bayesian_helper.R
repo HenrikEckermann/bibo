@@ -1,6 +1,6 @@
 
 ### DONT READ THIS FILE####
-# This document is not well documented. It contains functions I
+# This document is not well documented. It just contains functions I
 # wrote or copied for simulation and model fitting hands on... 
 library(loo)
 library(glue)
@@ -86,8 +86,7 @@ pp_plot <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
   # number of datasets
   n <- dim(pp_plot_data)[2]
   pp_plot_data <- select(pp_plot_data, sample(1:n, sample_number, replace = F))
-  # title
-  p_title <- glue("Family: {as.character(model$family)[1]}, DV:{y_name}")
+  p_title <- glue("family:{as.character(model$family)[1]}, {y_name}")
   p <- pp_plot_data %>%
         gather %>%
         ggplot(aes(value, group = key)) +
@@ -112,8 +111,7 @@ pp_plot_v <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
   # number of datasets
   n <- dim(pp_plot_data)[2]
   pp_plot_data <- select(pp_plot_data, sample(1:n, sample_number, replace = F))
-  # title
-  p_title <- glue("Family: {as.character(model$family)[1]}, DV:{y_name}")
+  p_title <- glue("family:{as.character(model$family)[1]}, {y_name}")
   p <- pp_plot_data %>%
         gather %>%
         ggplot(aes(key, value, group = key)) +
@@ -139,8 +137,7 @@ pp_plot_v2 <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
   # number of datasets
   n <- dim(pp_plot_data)[2]
   pp_plot_data <- select(pp_plot_data, sample(1:n, sample_number, replace = F))
-  # title
-  p_title <- glue("Family: {as.character(model$family)[1]}, DV:{y_name}")
+  p_title <- glue("family:{as.character(model$family)[1]}, {y_name}")
   p <- pp_plot_data %>%
         gather %>%
         ggplot(aes(key, value, group = key)) +

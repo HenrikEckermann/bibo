@@ -2,6 +2,7 @@
 data/*
 publications/*
 articles/*
-packrat/lib*/
+packrat/*/
 models/*
 .Rproj.user
+.ipynb_checkpoints/*
