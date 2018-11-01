@@ -1,6 +1,6 @@
 
 ### DONT READ THIS FILE####
-# This document is not well documented. It just contains functions I
+# This document is not well documented. It contains functions I
 # wrote or copied for simulation and model fitting hands on... 
 library(loo)
 library(glue)
@@ -82,17 +82,10 @@ pp_plot <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
     max(model$data[, y_name]) + upper*max(model$data[, y_name])
   # pp_plot_data has 8000 simulated datasets. rows are invidiual 
   # subjects and columns the number of simulation
-  pp_plot_data <- posterior_predict(model) 
-  # if we imputed data with brms, then output will be array and we first need
-  # to select the correct dim
-  if (length(dim(pp_plot_data)) > 2) {
-    pp_plot_data <- pp_plot_data[, , 1]
-  }
-  pp_plot_data <- pp_plot_data %>% t() %>% as.tibble()
+  pp_plot_data <- posterior_predict(model) %>% t() %>% as.tibble()
   # number of datasets
   n <- dim(pp_plot_data)[2]
   pp_plot_data <- select(pp_plot_data, sample(1:n, sample_number, replace = F))
-  p_title <- glue("family:{as.character(model$family)[1]}, {y_name}")
   p <- pp_plot_data %>%
         gather %>%
         ggplot(aes(value, group = key)) +
@@ -100,7 +93,7 @@ pp_plot <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
         scale_color_discrete(guide = F) +
         geom_density(data = model$data, aes_q(as.name(y_name), group = "none"), size = 1.5) +
         xlim(c(lower, upper)) +
-        ggtitle(p_title)
+        ggtitle(as.character(model$family)[1])
 }
 
 
@@ -113,17 +106,10 @@ pp_plot_v <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
     max(model$data[, y_name]) + upper*max(model$data[, y_name])
   # pp_plot_data has 8000 simulated datasets. rows are invidiual 
   # subjects and columns the number of simulation
-  pp_plot_data <- posterior_predict(model) 
-  # if we imputed data with brms, then output will be array and we first need
-  # to select the correct dim
-  if (length(dim(pp_plot_data)) > 2) {
-    pp_plot_data <- pp_plot_data[, , 1]
-  }
-  pp_plot_data <- pp_plot_data %>% t() %>% as.tibble()
+  pp_plot_data <- posterior_predict(model) %>% t() %>% as.tibble()
   # number of datasets
   n <- dim(pp_plot_data)[2]
   pp_plot_data <- select(pp_plot_data, sample(1:n, sample_number, replace = F))
-  p_title <- glue("family:{as.character(model$family)[1]}, {y_name}")
   p <- pp_plot_data %>%
         gather %>%
         ggplot(aes(key, value, group = key)) +
@@ -133,7 +119,7 @@ pp_plot_v <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
         geom_violin(data = model$data, aes_q(0, as.name(y_name), group = "none"), color = "firebrick") +
         geom_boxplot(data = model$data, aes_q(0, as.name(y_name), group = "none"), width = 0.08, outlier.size = 0.5) +
         coord_flip() +
-        ggtitle(p_title)
+        ggtitle(as.character(model$family)[1])
 }
 
 # use violin + points for pp check
@@ -145,17 +131,10 @@ pp_plot_v2 <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
     max(model$data[, y_name]) + upper*max(model$data[, y_name])
   # pp_plot_data has 8000 simulated datasets. rows are invidiual 
   # subjects and columns the number of simulation
-  pp_plot_data <- posterior_predict(model) 
-  # if we imputed data with brms, then output will be array and we first need
-  # to select the correct dim
-  if (length(dim(pp_plot_data)) > 2) {
-    pp_plot_data <- pp_plot_data[, , 1]
-  }
-  pp_plot_data <- pp_plot_data %>% t() %>% as.tibble()
+  pp_plot_data <- posterior_predict(model) %>% t() %>% as.tibble()
   # number of datasets
   n <- dim(pp_plot_data)[2]
   pp_plot_data <- select(pp_plot_data, sample(1:n, sample_number, replace = F))
-  p_title <- glue("family:{as.character(model$family)[1]}, {y_name}")
   p <- pp_plot_data %>%
         gather %>%
         ggplot(aes(key, value, group = key)) +
@@ -166,7 +145,7 @@ pp_plot_v2 <- function(model, sample_number, y_name, lower = 0.3, upper = 0.3) {
         geom_jitter(data = model$data, aes_q(0, as.name(y_name), group = "none"), alpha = 0.5, width = 0.1) +
         ylim(c(lower, upper)) +
         coord_flip() +
-        ggtitle(p_title)
+        ggtitle(as.character(model$family)[1])
 }
 
 
@@ -219,52 +198,3 @@ true_diff <- function(model, true_values) {
     mutate(diff = true_values - estimate)
 }
 
-# calculate time*cc contrasts for cc data models 
-cc_time_contrast <- function(model) {
-  p_samples <- posterior_samples(model)
-  # if we imputed data with brms, then output will be array and we first need
-  # to select the correct dim
-  if (length(dim(p_samples)) > 2) {
-  p_samples <- p_samples[, , 1] 
-  }
-  
-  p_samples <- p_samples %>% as.tibble()
-  colnames(p_samples) <- gsub("shannon_", "", colnames(p_samples))
-  colnames(p_samples) <- gsub("ginisimpson_", "", colnames(p_samples))
-  colnames(p_samples) <- gsub("inversesimpson_", "", colnames(p_samples))
-  colnames(p_samples) <- gsub("diversityinvsimpson_", "", colnames(p_samples))
-  p_samples %>% 
-      mutate(
-          pre_nocc_mu = b_Intercept,
-          pre_cc_mu = b_Intercept + b_ccyes,
-          post_nocc_mu = b_Intercept + b_timepost,
-          post_cc_mu = b_Intercept + b_timepost + b_ccyes + `b_ccyes:timepost`) %>%
-      select(pre_nocc_mu, pre_cc_mu, post_nocc_mu, post_cc_mu)
-}
-
-contrast_plot <- function(model) {
-    # compare post_cc to all other groups
-    mean_diff <- 
-        cc_time_contrast(model) %>%
-            mutate(
-                post_cc_min_post_nocc = post_cc_mu - post_nocc_mu,
-                post_cc_min_pre_cc = post_cc_mu - pre_cc_mu,
-                post_cc_min_pre_nocc = post_cc_mu - pre_nocc_mu
-            ) %>%
-            select(post_cc_min_post_nocc, post_cc_min_pre_cc, post_cc_min_pre_nocc)
-    # what is the prob that post_cc is not different from group xyz
-    mean_diff %>% summarise_all(function(x) mean(x>0)) %>% print()
-    # plot posterior mean post_cc - other mean
-    mean_diff %>%
-        gather(term, value) %>%
-        group_by(term) %>%
-        do(data.frame(
-            mean = mean(.$value),
-            lower = hpdi(.$value)[1],
-            upper = hpdi(.$value)[2]
-        )) %>%
-        ggplot(aes(term, mean)) +
-            geom_pointrange(aes(ymin = lower, ymax = upper)) +
-            geom_hline(aes(yintercept = 0), linetype = "dashed") +
-            ylim(-1, 0.5) +
-            coord_flip()}
