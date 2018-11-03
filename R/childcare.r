@@ -227,4 +227,4 @@ plot_landscape(proj, legend = T, size = 1)
 
 
 
-ds2
+pseq %>% sample_data()
