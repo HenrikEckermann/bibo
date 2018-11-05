@@ -6,3 +6,4 @@ packrat/*/
 models/*
 .Rproj.user
 .ipynb_checkpoints/*
+notebooks/.ipynb_checkpoints/*.ipynb
