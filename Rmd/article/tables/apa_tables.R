@@ -11,10 +11,11 @@ library(foreign)
 library(tidyverse)
 library(glue)
 library(kableExtra)
+library(here)
 
 ## ------------------------------------------------------------------------
 # BIBO confounders dataset 
-confounders <- read.spss("~/workspace/research_master/dpb/minor_research_project/article/analyses/data/bibo_confounders.sav", to.data.frame = T)
+confounders <- read.spss(here("data/meta_data/bibo_confounders.sav"), to.data.frame = T)
 # select relevant columns
 confounders <- select(confounders, -group193)
 # rename for convenience
@@ -22,7 +23,7 @@ colnames(confounders) <- c("ID", "birthweight", "siblings", "pre_smoking",
  "pre_alcohol", "apgar5min", "maternal_age", "delivery", "gestat_length",
   "childsex", "maternal_education", "firstborn")
 # Carolina sent me also this file because the confounders file is incomplete for usage:
-june2017_gerben <- read_excel("~/workspace/research_master/dpb/minor_research_project/article/analyses/data/june2017_gerben.xlsx", sheet = "Data")
+june2017_gerben <- read_excel(here("data/meta_data/my.metadata2.xlsx"), sheet = "Data")
 # rename colnames for convenience
 colnames(june2017_gerben) <- c("ID", "begin_group", "group", "group_strict",
  "group_BF_noBF", "CC_noCC", "weeks_BF", "percent_BF_kdv1_kdv2", "CC",
@@ -125,7 +126,7 @@ final_table <-
 # group_by(df_table, group) %>% summarise(n= n())
 
 ## ------------------------------------------------------------------------
-source("~/workspace/research_master/dpb/minor_research_project/article/analyses/gerben/adj_linear mixed model for Henrik to measure between groups changes.R")
+source(here("R/childcare_article_analyses.R"))
 
 ## ------------------------------------------------------------------------
 library(knitr)
