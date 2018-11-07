@@ -1,0 +1,584 @@
+---
+title: "Takehome Exam"
+author: "Henrik Eckermann"
+#csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa.csl
+documentclass: "article"
+header-includes:
+   - \usepackage{booktabs}
+   - \usepackage{multirow}
+   - \usepackage{subcaption}
+   - \usepackage{caption}
+   - \usepackage{tikz}
+   - \usepackage{float}
+   - \usepackage{setspace}
+output: 
+  pdf_document:
+    fig_caption: yes
+    keep_tex: yes
+    includes:
+      in_header: header.tex
+#bibliography: references.bib
+---
+
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = F, warning=F, message=F, results = "hide", fig.show = "hide", fig.pos = "H")
+#for kableExtra:
+options(knitr.table.format = "latex")
+```
+
+
+
+```{r}
+# load libraries
+library(tidyverse)
+library(lavaan)
+library(psych)
+library(semPlot)
+library(MVN)
+library(kableExtra)
+library(reticulate)
+library(BaylorEdPsych)
+library(pastecs)
+library(VIM)
+```
+
+```{r}
+# own functions
+source("~/workspace/own/reporting.R")
+# import data
+setwd("~/workspace/research_master/block_4/structural_equation_modeling/midterm/")
+df <- read.csv2("takehome2018.csv", sep = ";")
+# make all letter lowercase for convenience
+colnames(df) <- tolower(colnames(df))
+str(df)
+```
+
+
+
+
+
+## PART A: Remember the three steps?
+
+
+##### 1. Are any of the variables skewed or kurtosed? If so, which variable(s)? 
+
+```{r results = 'asis', fig.show='asis', fig.cap="Distribution of standardized continuous variables"}
+##### 1
+#### Visual inspection
+# I standardize all cont variables to make visual comparison easier
+df_s <- select(df, -sex) %>% 
+  mutate_all(funs(scale(.))) 
+df_s <- cbind(df_s, sex = df$sex)
+# Then put everything in long format to plot
+df_long <- 
+  rownames_to_column(df_s, "id") %>%
+  gather(variable, value, -id, - sex)
+# plot distributions
+distr_plots <- 
+  ggplot(df_long, aes(variable, value)) +
+    geom_violin() +
+    geom_boxplot(width = 0.2) 
+
+#### quantitative inspection
+# nt <- rownames_to_column(norm_stats, "stats") %>%
+#   gather(variables, values, -stats) %>%
+#   spread(stats, values) %>%
+#   mutate_if(is.numeric, funs(round(., 2))) %>%
+#   mutate(kurtosis = cell_spec(kurtosis, color = ifelse(abs(`kurt.2SE`) > 1), "red", "black"))
+
+
+norm_stats <- stat.desc(select(df, -sex), basic = F, desc = F, norm = T)
+norm_table <- data.frame(
+  rbind(abs(norm_stats["skew.2SE",]) > 1,
+  abs(norm_stats["kurt.2SE",]) > 1)
+)
+norm_table <- rbind(norm_table, norm_stats["normtest.p",] < 0.01)
+norm_table <- mutate_all(norm_table, funs(cell_spec(ifelse(., "Yes", "No"), color = ifelse(., "red", "black"))))
+rownames(norm_table) <- c("Skewed", "Kurtosed", "Shapiro sig")
+kable(norm_table, booktabs = T, caption = "Normality Statistics", escape = F) %>%
+  kable_styling(latex_option = c("hold_position"), position = "left")
+```
+
+
+```{r}
+# qq plots
+for (measure in colnames(select(df, -sex))) {
+  print(
+    gg_qq(df[, measure]) +
+      ggtitle(measure)
+    )
+}
+distr_plots
+```
+
+
+```{r}
+# I also check mvn here since this is an assumption.
+# For that I deselect sex and only include complete cases
+normality_test <- 
+  select(na.omit(df), -sex) %>%
+  mvn(mvnTest = "mardia", multivariatePlot = "qq", univariatePlot = "qq", showOutliers = T, multivariateOutlierMethod = "quan", showNewData = T)
+# number of mvo
+normality_test$multivariateOutliers
+normality_test$univariateNormality
+normality_test$Descriptives
+normality_test$multivariateNormality
+```
+
+The table shows for each variable whether it was significantly skewed or kurtosed and also whether the Shapiro Wilk test was significant. We see that besides the variable _educate_, all variables deviate significantly from a normal distribution: If a significant skew or kurtosis was present, then it was always negative. However, visual inspection is important to validate the quantitative results: The violinplots as well as the qqplots show that the univariate distributions deviate for some variables in the tails but generally the deviation is very small and should be unproblematic for the analyses.
+
+##### 2. Do any of the variables contain any outliers (> 3 SD)? If so, which variables and how many?
+
+Yes, altogether, there are 9 univariate outliers present. The following table shows the variable of the outliers, it's magnitude (the values are standardized) as well as the corresponding rownumber:
+
+```{r results='asis'}
+##### 2
+outliers <- filter(df_long, abs(value) > 3)
+n_outliers <- sum(abs(df_s) > 3, na.rm = T)
+kable(outliers, digits = 2, booktabs = T, caption = "Outliers (absolute SD > 3)") %>%
+  kable_styling(latex_option = c("hold_position"), position = "left")
+```
+
+
+
+##### 3. Are the missing values Missing Completely at Random (MCAR)? Report the test statistic and interpret the statistical significance of this statistic.
+
+```{r}
+##### 3
+# get impression of missingness patterns visually
+aggr_missing <- aggr(df, numbers = T, prop = T)
+sort(aggr_missing$percent)
+# is there a difference between sex?
+for (column in colnames(df)[-1]) {
+  barMiss(df[, c("sex", column)])
+}
+# little mcartest --> I first remove sex for that since the test does 
+# not deal well with categorical variables 
+mcar <- select(df, -sex) %>%
+  LittleMCAR()
+barplot(mcar$amount.missing)
+mcar$amount.missing
+# compare female/male (for that I changes the filter function manually
+# instead of rewriting it over and over) income, school, teach
+filter(df, sex==1) %>%
+  select(teach) %>%
+  is.na() %>%
+  mean()
+# percent total
+mean(mcar$amount.missing[2,-1])
+# how much percent is missing casewise?
+(1- length(rownames(na.omit(df)))/length(rownames(df))) * 100
+length(rownames(na.omit(df)))/800
+# total 
+(sum(is.na(df))/(length(colnames(df)) * length(rownames(df)))) * 100
+```
+
+
+
+According to the _LittleMCAR_ test [@R-BaylorEdPsych] the data is not missing completely at random (`r report_chi(mcar$chi.square, mcar$df, mcar$p.value)`). There are 81.25% complete cases. Thus, 18.75% are not included in the analyses when using listwise deletion.
+
+##### 4. Does the pattern of correlations calculated using listwise deletion differ from those calculated using pairwise deletion?  
+
+Table 3 shows the difference (listwise minus pairwise) between the Pearson r values (upper diagonal) and the corresponding p values (rounded by 3 digits; lower diagnonal). Absolute differences larger than 0.05 or 0.01 are printed bold for Pearson r and p values, respectively, to indicate the highest differences encountered. We see that in terms of absolute values, there is not a large between listwise or pairwise computed correlations. However, it is noticeable that if there is a difference, the direction of the difference is always the same: The correlations are higher when pairwise correlations are used. Because of that, the correlation between accept and educate is only slightly significant when pairwise correlation is used and no longer significant if listwise deletion is used. For the rest, there is no difference with regard to the significance of the correlations (see also the table in the results section for pearson r coefficients for both variants.)
+
+```{r results='asis'}
+##### 4
+# calculate correlations and difference between pw and lw
+lw_cor <- corr.test(df[, -1], use = "complete")
+pw_cor <- corr.test(df[, -1])
+# make bold and round
+cor_diff_r <- as.data.frame(lw_cor$r - pw_cor$r) %>%
+  rownames_to_column("rownames") %>%
+  mutate_if(is.numeric, funs(round(., 3))) %>%
+  mutate_if(is.numeric, function(x) {
+    cell_spec(x, bold = ifelse(abs(x) > 0.05, T, F))
+  }) %>%
+  column_to_rownames("rownames")
+cor_diff_p <- as.data.frame(lw_cor$p - pw_cor$p) %>%
+  rownames_to_column("rownames") %>%
+  mutate_if(is.numeric, funs(round(., 3))) %>%
+  mutate_if(is.numeric, function(x) {
+    cell_spec(x, bold = ifelse(abs(x) > 0.01, T, F))
+  }) %>%
+  column_to_rownames("rownames")
+# merge 
+cor_diff <- cor_diff_r
+cor_diff[lower.tri(cor_diff)] <- cor_diff_p[lower.tri(cor_diff_p)]
+diag(cor_diff) <- "-"
+# delete leading 0
+cor_diff <- mutate_all(cor_diff, funs(gsub("0\\.", ".", .)))
+# print table
+kable(cor_diff, escape = F, booktabs = T, caption = "Difference in Pearson r between listwise and pairwise deletion") %>%
+  kable_styling(latex_option = c("hold_position"), position = "left")
+# here I create a table for the results section (skip to comment "end table")
+# first pairwise part
+pw_cor_df <- data.frame(round(pw_cor$r, digits = 2))
+pw_cor_p <- round(pw_cor$p, digits = 4)
+# create apa table raw data and asterisks
+table_note <- "Correlation were computed after listwise deletion (upper diagnonal) or pairwise deletion (lower diagonal). Pvalues are correct for multiple testing (Holm). * p < .05. ** p < .01. *** p < .001"
+pw_cor_table <- 
+  rownames_to_column(data.frame(pw_cor$r), "rownames") %>%
+  mutate_if(is.numeric, funs(gsub("0\\.", ".", report_star_latex(format(round(., 2), nsmall = 2), pw_cor$p[which(pw_cor$r == .)])))) %>%
+  column_to_rownames("rownames")
+# same for listwise
+lw_cor_df <- data.frame(round(lw_cor$r, digits = 2))
+lw_cor_p <- round(lw_cor$p, digits = 4)
+# create apa table raw data and asterisks
+lw_cor_table <- 
+  rownames_to_column(data.frame(lw_cor$r), "rownames") %>%
+  mutate_if(is.numeric, funs(gsub("0\\.", ".", report_star_latex(format(round(., 2), nsmall = 2), lw_cor$p[which(lw_cor$r == .)])))) %>%
+  column_to_rownames("rownames")
+# merge 
+cor_table <- pw_cor_table
+# insert upper diagonal
+cor_table[upper.tri(cor_table, diag = T)] <- lw_cor_table[upper.tri(cor_table, diag = T)]
+# set diag to "-"
+diag(cor_table) <- "-"
+# create apa table
+var_names <- colnames(cor_table)
+var_names <- str_to_title(var_names)
+colnames(cor_table) <- var_names 
+rownames(cor_table) <- var_names
+cor_result <- 
+  kable(cor_table, booktabs = T, caption = "Pearson correlations for all measured variables.", escape = F) %>%
+    kable_styling(position = "left") %>%
+    footnote(general = table_note, general_title = "Note.", footnote_as_chunk = T, threeparttable = T)
+# end table 
+```
+
+
+
+##### 5. Based on these preliminary analyses, are there any reasons to NOT use the default estimator ('normal' maximum likelihood: ML) in lavaan? If so, state the reasons why ML is not appropriate and describe potential alternatives. If you think ML is appropriate, then state the reasons why ML is appropriate.
+
+For making a decision about the estimator, sample size and plausibility of the normality and independence assumptions were considered according to @Ullman2006. The deviations from univariate normality were minor. With large sample size even small differences reach significance here. Visual inspections of QQ-plots confirmed only small deviations. More importantly, according to Mardia's test, the assumption of multivariate normality is met (Mardias skewness = 144.26, `r report_p(0.065)`, Mardias kustosis = -0.65, `report_p(0.51)`). The ML estimator should be a good choice with medium to large sample size and when plausibility of the normality assumption is present [@Ullman2006]. However, other multivariate normality tests (there are several other one can use in MVN [@R-MVN]) showed different results (violated assumptions). Therefore, to be on the safe side, maximum likelihood estimation with robust (Huber-White) standard errors and a scaled test statistic that is  equal to the Yuan-Bentler test statistic was utilized. 
+
+\newpage
+
+## PART B: SEM estimation, evaluation, and improvement
+
+
+##### 6. Express the portion of the theoretical model examined in this study as a set of four equation(s). That is, describe two equations that specify the measurement model; and two equations that specify the structural model.
+
+Measurement model:  
+
+$quality =\sim school + teach + accept$  
+$ses =\sim educate + income + involve$  
+
+Structural model:  
+
+$achieve \sim quality + ses$     
+$cito \sim achieve$   
+
+##### 7. Create a path diagram that depicts the theoretical model using semPlot(). 
+
+See figure 1. 
+
+```{r fig.cap="Pathdiagram for hypothesized model in this study (task number 7).", fig.show = 'asis'}
+##### 7
+h_model <- '
+  # latent variable definitions
+  quality =~ school + teach + accept
+  ses =~ educate + income + involve
+  # regressions 
+  achieve ~ quality + ses
+  cito ~ achieve
+  '
+fit1 <- cfa(h_model, df)
+semPaths(fit1, what= "paths", edge.label.cex = 0.7, layout = "tree2", rotation = 4, nCharNodes = 8, edge.color = "black", sizeMan = 10, sizeMan2 = 7, sizeLat = 10)
+summary(fit1, standardized = T, rsquare = T, fit.measures = T)
+```
+
+
+##### 8. Provide a R script that specifies, fits, and summarizes the measurement model using the lavaan() function. 
+
+
+```{r echo = T}
+##### 8
+# specify model
+mm_model <- '
+  # latent variable definitions
+  quality =~ school + teach + accept
+  ses =~ educate + income + involve
+  '
+# fit model
+mm_fit <- lavaan(
+  mm_model, 
+  data = df,
+  auto.var = T, 
+  auto.cov.y = T, 
+  auto.cov.lv.x = T, 
+  auto.fix.first = T, 
+  auto.fix.single = T, 
+  int.ov.free = T, 
+  int.lv.free = F, 
+  missing = "fiml", 
+  estimator = "MLR"
+)
+# summary 
+summary(mm_fit, standardized = T, rsquare = T, fit.measures = T)
+```
+
+
+##### 9. Did the measurement portion of the model adequately fit the observed data? If so, briefly describe what criteria were used to support this decision? If not, which modifications to the model needed to be estimated to adequately fit the model to the observed data?
+
+```{r}
+##### 9
+# check the factor loadings
+mm_fit_params <- parameterestimates(mm_fit, standardized =T)
+# check fit measures
+mm_fit_model_fit <- fitmeasures(mm_fit)
+# obtain modification indices
+mi <- modificationindices(mm_fit)
+# show only mi > 3.84 in descending order
+arrange(mi[mi["mi"] > 3.48,], desc(mi))
+fitMeasures(mm_fit)
+summary(mm_fit, standardized = T, rsquare = T, fit.measures = T)
+mm_fit_params
+```
+
+
+
+The model did not fit the data according to the $\chi^2$ statistic (`r report_chi(47.311, 8, mm_fit_model_fit["pvalue"])`). However, a significant $\chi^2$ statistic is expected with that large of a sample size. Therefore, incremental and absolute goodness of fit measures have been considered and evaluated as pointed out by @Hu1999. The Comparative Fit Index (CFI) (_CFI_ = `r round(mm_fit_model_fit["cfi"], 3)`), Tucker-Lewis Index (TLI) (_TLI_ = `r round(mm_fit_model_fit["tli"], 3)`) and the Standardized Root Mean Square Residual (SRMR) (_SRMR_ = `r round(mm_fit_model_fit["srmr"], 3)`) indicated good model fit. The Root Mean Square Error of Approximation (RMSEA) (_RMSEA_ = `r round(mm_fit_model_fit["rmsea"], 3)`) was right at the border since values smaller than 0.6 are indicative of the model fitting the data and values larger than 0.10 indicate a poor fit [@Ullman2006]. Altogether, this provided evidence that the measurement model sufficiently fits and therefore any model adjustments based on modification indices have not been considered. 
+
+
+
+```{r}
+mm_fit_model_fit
+```
+
+
+
+
+##### 10. Provide a R script that specifies, fits, and summarizes the measurement AND structural portions of the model using the lavaan() function.
+
+
+```{r echo = T}
+sem_model <- '
+  # latent variable definitions
+  quality =~ school + teach + accept
+  ses =~ educate + income + involve
+  # regressions 
+  achieve ~ quality + ses
+  cito ~ achieve
+  '
+# fit model
+sem_fit <- lavaan(
+  sem_model, 
+  data = df,
+  auto.var = T, 
+  auto.cov.y = T, 
+  auto.cov.lv.x = T, 
+  auto.fix.first = T, 
+  auto.fix.single = T, 
+  int.ov.free = T, 
+  int.lv.free = F, 
+  missing = "fiml",
+  estimator = "MLR"
+)
+# summary 
+summary(sem_fit, standardized = T, rsquare = T, fit.measures = T)
+# fit measures 
+sem_fit_model_fit <- fitmeasures(sem_fit)
+```
+
+
+```{r}
+summary(sem_fit, fit.measures = T, rsquare= T, standardized =T)
+fitMeasures(sem_fit)
+```
+
+
+```{r}
+semPaths(mm_fit, what= "paths", "std", edge.label.cex = 0.8, layout = "tree2", rotation = 2, curve = 3, intercepts = F, residuals = F, nCharNodes = 8, edge.color = "black", sizeMan = 10, sizeMan2 = 7, sizeLat = 10, style = "OpenMx")
+```
+
+
+
+##### 11. Did the SEM adequately fit the observed data? Briefly describe what criteria were used to support this decision.
+
+```{r}
+##### 11 
+summary(sem_fit, standardized = T, rsquare = T, fit.measures = T)
+```
+
+The model did not fit the data according to the $\chi^2$ statistic (`r report_chi(788.748, 18, sem_fit_model_fit["pvalue"])`). As mentioned, a significant $\chi^2$ statistic is expected with that large of a sample size. In addition the CFI (_CFI_ = `r round(sem_fit_model_fit["cfi"], 3)`), TLI (_TLI_ = `r round(sem_fit_model_fit["tli"], 3)`), RMSEA (_RMSEA_ = `r round(sem_fit_model_fit["rmsea"], 3)`) and the SRMR (_SRMR_ = `r round(sem_fit_model_fit["srmr"], 3)`) indicated poor model fit. (Note: Cutoff and citations for these measures are mentioned under question 15). 
+
+##### 12. Based on the modification indices, what adjustments improve the SEM the most? Does it make 'theoretical' sense to include these parameters?
+
+```{r results='asis'}
+sem_mi <- modificationindices(sem_fit)
+kable(arrange(sem_mi[sem_mi["mi"] > 3.48,], desc(mi)), booktabs = T, caption = "Modification indices greater than 3.48 in descending order.", digits = 3) %>%
+  kable_styling(latex_options = c("hold_position"), position = "left")
+```
+
+Table 4 shows the modification indices sorted in descending order (by mi). In the following I explain for the highest 5 whether they make theoretical sense or not: The highest mi is shown for the regression path $cito \sim quality$. Including this parameter would make sense.  _Quality_ could have a direct effect on _cito_ besides having an indirect effect that is mediated by _achieve_.  The next three parameters do not make sense based on our theoretical model since in our model _cito_ is the dependent variable that is explained by _achieve_ and not vice versa (also likely _cito_ is a one time measure at the end of the year that easily might be influenced by a short term impact whereas _achieve_ is a measurement evaluating a longer term performance). It does not make sense that _cito_ explains the _quality_ of the school environment. Finally, similar to _quality_, _ses_ could have a direct effect besides the mediating effect via _achieve_. Thus, it does make sense from a theoretical perspective to include this as well.
+
+
+##### 13. Based on your understanding of the hypothesized model and the associations among study measures, what are the two adjustments that make the most theoretical sense to include in order to improve the fit of the model?
+
+I would say that it makes most sense to include direct effects of _quality_ and _ses_ on _cito_ so that we end up with a model were _quality_ and _ses_ have not only an effect on achieve but also directly on _cito_. This makes sense from a theoretical perspective since ses and quality are expected to faciliate the development of academic and social abilities of a child. This will have an effect on both (achieve) and academic tests such as cito. Some effects of ses and quality may be mediated by achieve. For example, if a child has higher achievements, it might be that it gets even more motivated due to high achievements or it maybe that teachers tend to treat children differently who score high on their evaluations.
+
+
+##### 14. Provide a R script that specifies, fits, and summarizes the 'improved' model using the lavaan() function.  This SEM should include the two additional parameters identified in #13.
+
+```{r echo=T}
+final_model <- '
+  # latent variable definitions
+  quality =~ school + teach + accept
+  ses =~ educate + income + involve
+  # regressions 
+  achieve ~ quality + ses
+  cito ~ achieve + quality + ses
+  '
+# fit model
+final_fit <- lavaan(
+  final_model, 
+  data = df,
+  auto.var = T, 
+  auto.cov.y = T, 
+  auto.cov.lv.x = T, 
+  auto.fix.first = T, 
+  auto.fix.single = T, 
+  int.ov.free = T, 
+  int.lv.free = F,
+  missing = "fiml",
+  estimator = "MLR"
+)
+# summary 
+summary(final_fit, standardized = T, rsquare = T, fit.measures = T)
+inspect(final_fit, "r2")
+parameterEstimates(final_fit)
+```
+
+```{r}
+predict(final_fit)
+corr.test(predict(final_fit))
+corr.test(predict(mm_fit))
+```
+
+##### 15. Did the 'improved' model adequately fit the observed data? Briefly describe what criteria were used to support this decision. 
+
+```{r}
+model_fit_final <- fitmeasures(final_fit)
+fm_fit_params <- parameterEstimates(final_fit, standardized = T)
+```
+
+To decide whether the model fits the data, I considered both incremental and absolute measures of fit. Accoring to the $\chi^2$ tests statistic, the model does not fit the data (`r report_chi(78.479, 16, model_fit_final["pvalue"])`). The large sample size increases the likelihood of a significant $\chi^2$ test statistic even if the model fits the data [@Ullman2006]. The _RMSEA_ (_RMSEA_ = `r round(model_fit_final["rmsea"], 3)`) is right at the border since values smaller than 0.6 are indicative of the model fitting the data and values larger than 0.10 indicates a poor fit [@Ullman2006]. The SRMR is below the cutoff value of 0.08 as suggested by @Hu1999 and therefore indicates good model fit (_SRMR_ = `r round(model_fit_final["srmr"], 3)`) Lastly, the _CFI_ as well as the _TLI_ as incremental measure of fit indicate that the model fits the data (_CFI_ = `r round(model_fit_final["cfi"], 3)`, _TLI_ = `r round(model_fit_final["tli"], 3)`). Values greater than 0.95 are often indicative of a good fit according to @Ullman2006.
+
+
+
+```{r}
+# table for means and SDs 
+# first only remove rm per variable
+descriptives_cc <- 
+  gather(df, variables, values, - sex) %>%
+    group_by(variables) %>%
+    summarise(M = round(mean(values, na.rm = T), 2), `(SD)` = round(sd(values, na.rm = T), 2))
+# now listwise deletion 
+descriptives_nc <- 
+  gather(na.omit(df), variables, values, - sex) %>%
+    group_by(variables) %>%
+    summarise(M = round(mean(values, na.rm = T), 2), `(SD)` = round(sd(values, na.rm = T), 2))
+# change names for table
+descriptives <- 
+  left_join(descriptives_cc, descriptives_nc, by = "variables") %>% 
+  mutate(variables = str_to_title(variables))
+colnames(descriptives) <- c("", "M", "(SD)", "M", "(SD)") 
+# latex 
+desc_table <- 
+  kable(descriptives, booktabs = T, caption = "Means and Standard Deviations") %>%
+    kable_styling(latex_options = c("hold_position"), position = "left") %>%
+    add_header_above(c(" " = 1, "All cases" = 2, "Complete cases" = 2))
+```
+
+```{r}
+# measurement model parameter table
+par_table <- 
+  select(mm_fit_params, -op, -std.lv, -std.nox) %>%
+  mutate(
+    lhs = str_to_title(lhs), 
+    rhs = ifelse(rhs == "", "-", str_to_title(rhs)),
+    pvalue = ifelse(is.na(pvalue), "-", report_p(pvalue, p_str = F)),
+    z = ifelse(is.na(z), "-", format(round(z, 2), nsmall = 2))
+  ) %>%
+  mutate_if(is.numeric, funs(format(round(., 2), nsmall = 2))) %>%
+  mutate(`95%CI`= glue("{ci.lower} - {ci.upper}")) %>%
+  rename(
+    DV = lhs,
+    IV = rhs,
+    Est = est,
+    SE = se,
+    `Est (std.)` = std.all,
+    Pvalue = pvalue
+  ) %>%
+  select(-ci.lower, -ci.upper)
+par_table_note <- "Est (std.) = (Standardized) Parameter estimates of the lavaan function."
+mm_params_table <- 
+    kable(par_table, booktabs = T, caption = "Parameter estimates of the measurement model.", escape = T, align = c(rep("l", 2), rep("r", 5))) %>%
+      kable_styling(position = "left") %>%
+      group_rows("Latent variables", 1, 6) %>%
+      group_rows("Variances", 7, 14) %>%
+      group_rows("Covariances", 15, 15) %>%
+      group_rows("Intercepts", 16, 23) %>%
+      footnote(general = par_table_note, general_title = "Note.", footnote_as_chunk = T, threeparttable = T)
+```
+
+```{r}
+# make parameter apa table for fm (works in r 3.44 and kableextra 0.9)
+fm_par_table <- 
+  select(fm_fit_params, -op, -std.lv, -std.nox) %>%
+  mutate(
+    lhs = str_to_title(lhs), 
+    rhs = ifelse(rhs == "", "-", str_to_title(rhs)),
+    pvalue = ifelse(is.na(pvalue), "-", report_p(pvalue, p_str = F)),
+    z = ifelse(is.na(z), "-", format(round(z, 2), nsmall = 2))
+  ) %>%
+  mutate_if(is.numeric, funs(format(round(., 2), nsmall = 2))) %>%
+  mutate(`95%CI`= glue("{ci.lower} - {ci.upper}")) %>%
+  rename(
+    DV = lhs,
+    IV = rhs,
+    Est = est,
+    SE = se,
+    `Est (std.)` = std.all,
+    Pvalue = pvalue
+  ) %>%
+  select(-ci.lower, -ci.upper)
+#fm_par_table
+fm_note <- "Est (std.) = (Standardized) Parameter estimates of the lavaan function."
+fm_params_table <- 
+    kable(fm_par_table, booktabs = T, caption = "Parameter estimates of the final model.", escape = T, align = c(rep("l", 2), rep("r", 5))) %>%
+      kable_styling(position = "left") %>%
+      group_rows("Latent variables", 1, 6) %>%
+      group_rows("Regressions", 7, 11) %>%
+      group_rows("Variances", 12, 21) %>%
+      group_rows("Covariances", 22, 22) %>%
+      group_rows("Intercepts", 23, 32) %>%
+      footnote(general = fm_note, general_title = "Note.", footnote_as_chunk = T, threeparttable = T)
+```
+
+
+
+
+
+
+\newpage
+
+### Appendix 
+
+#### A Tables 
+
+```{r results = 'asis'}
+desc_table
+
+cor_result
+
+mm_params_table
+
+fm_params_table
+```
+
+
+

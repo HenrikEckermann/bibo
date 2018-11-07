@@ -1,0 +1,222 @@
+---
+title: "Tables"
+author: "Henrik Eckermann"
+#csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa.csl
+documentclass: "article"
+header-includes:
+   - \usepackage{booktabs}
+   - \usepackage{multirow}
+   - \usepackage{subcaption}
+   - \usepackage{caption}
+   - \usepackage{tikz}
+   - \usepackage{float}
+   - \usepackage{setspace}
+output: 
+  pdf_document:
+    fig_caption: yes
+    keep_tex: yes
+    includes:
+      in_header: header.tex
+#bibliography: references.bib
+---
+
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = F, warning=F, message=F, results = "hide", fig.show = "hide", fig.pos = "H")
+#for kableExtra:
+options(knitr.table.format = "latex")
+```
+
+
+```{r echo = FALSE}
+# import libraries
+library(readxl)
+library(foreign)
+library(tidyverse)
+library(glue)
+library(kableExtra)
+```
+
+\newpage
+
+```{r}
+# BIBO confounders dataset 
+confounders <- read.spss("~/workspace/research_master/dpb/minor_research_project/article/analyses/data/bibo_confounders.sav", to.data.frame = T)
+# select relevant columns
+confounders <- select(confounders, -group193)
+# rename for convenience
+colnames(confounders) <- c("ID", "birthweight", "siblings", "pre_smoking",
+ "pre_alcohol", "apgar5min", "maternal_age", "delivery", "gestat_length",
+  "childsex", "maternal_education", "firstborn")
+# Carolina sent me also this file because the confounders file is incomplete for usage:
+june2017_gerben <- read_excel("~/workspace/research_master/dpb/minor_research_project/article/analyses/data/june2017_gerben.xlsx", sheet = "Data")
+# rename colnames for convenience
+colnames(june2017_gerben) <- c("ID", "begin_group", "group", "group_strict",
+ "group_BF_noBF", "CC_noCC", "weeks_BF", "percent_BF_kdv1_kdv2", "CC",
+ "age_CC_min2d", "age_CC_plus28d",  "age_begin_weeks", "age_plus_4weeks",
+ "tot_kdv", "kdv1", "kdv2")
+# merge confounders with df so that I can compare groups:
+df_complete <- june2017_gerben %>% 
+  select(-tot_kdv, - kdv1, -kdv2) %>%
+  left_join(confounders, by = "ID")
+```
+
+
+
+```{r}
+# select final sample 
+df <- filter(df_complete, 
+  delivery == "natuurlijke bevalling" | delivery == "pomp", apgar5min > 7,
+  begin_group == 1, group_strict != 99999
+)
+# change numericals to factors
+df <- df %>%
+  mutate_at(
+    vars(c("group_strict", "group_BF_noBF", "CC_noCC", "CC", "childsex", "firstborn")),
+    funs(factor)
+  )
+
+colnames(df)
+# make df for table
+df_table <- df 
+colnames(df_table) <- c('ID', 'begin_group', 'group', 'Group',
+ 'group_BF_noBF', 'CC_noCC', 'weeks_BF', 'percent_BF_kdv1_kdv2', 'CC',
+ 'age_CC_min2d', 'age_CC_plus28d', 'age_begin_weeks', 'age_plus_4weeks',
+ 'birthweight', 'siblings', 'pre_smoking', 'pre_alcohol', 'apgar5min',
+ 'maternal_age', 'delivery', 'gestat_length', 'childsex',
+ 'maternal_education', 'firstborn')
+levels(df_table$Group) <- c("BF + CC", "no BF + CC", "BF + no CC", "no BF + no CC")
+head(df_table)
+
+# create df with descriptives 
+d <- group_by(df_table, Group) %>%
+  summarise(
+    Male = sum(childsex == 1),
+    Female = sum(childsex == 0),
+    mean_apgar = mean(apgar5min, na.rm = T),
+    sd_apgar = sd(apgar5min, na.rm = T),
+    `mean (sd)_apgar` = NA,
+    min_apgar = min(apgar5min),
+    max_apgar = max(apgar5min),
+    mean_maternal_age = mean(maternal_age, na.rm = T),
+    sd_maternal_age = sd(maternal_age, na.rm = T),
+    `mean (sd)_maternal_age` = NA,
+    min_maternal_age = min(maternal_age), 
+    max_maternal_age = max(maternal_age),   
+    mean_maternal_education = mean(maternal_education, na.rm = T),
+    sd_maternal_education = sd(maternal_education, na.rm = T),
+    `mean (sd)_maternal_education` = NA,
+    min_maternal_education = min(maternal_education, na.rm = T), 
+    max_maternal_education = max(maternal_education, na.rm = T),
+    mean_birthweight = mean(birthweight),
+    sd_birthweight = sd(birthweight, na.rm = T),
+    `mean (sd)_birthweight` = NA,
+    min_birthweight = min(birthweight), 
+    max_birthweight  = max(birthweight)) %>%
+    mutate_if(is.numeric, funs(format(round(., 1), nsmall = 0))) %>%
+    mutate(
+      `mean (sd)_apgar` = glue("{mean_apgar} $\\pm$ {sd_apgar}"),
+      `mean (sd)_maternal_age` = glue("{mean_maternal_age} $\\pm$ {sd_maternal_age}"),
+      `mean (sd)_maternal_education` = glue("{mean_maternal_education} $\\pm$ {sd_maternal_education}"),
+      `mean (sd)_birthweight` = glue("{mean_birthweight} $\\pm$ {sd_birthweight}"),
+    ) %>%
+    select(-mean_apgar, -sd_apgar, -mean_maternal_age, -sd_maternal_age, -mean_maternal_education, -sd_maternal_education, -mean_birthweight, -sd_birthweight)
+d
+    
+# obtain order of colnames since spread does not preserve it 
+# but I need to keep the order for the rows laters
+ordered_rows <- colnames(d)
+d
+# back to wide format, reorder, names ready for table, merge sd + mean to str
+
+d <- 
+  mutate_if(d, is.numeric, funs(toString(.))) %>%  
+    gather(variable, value, -Group) %>%
+    spread(Group, value) %>%
+    arrange(match(variable, ordered_rows[-1])) %>%
+    mutate(variable = gsub("_.+", "", variable))
+
+  
+colnames(d)[1] <- ""
+table_caption <- "Descriptive statistics for infants and mothers included in the present study."
+table_note <- "Two way analyses of variances did not show significant differences in the mean between the groups for the continuous measures."
+final_table <- 
+  kable(d, booktabs = T, caption = table_caption,  escape = F, longtable = T) %>%
+    kable_styling(full_width = T) %>%
+    group_rows("Childsex", 1,2) %>%
+    group_rows("Apgar score", 3,5) %>%
+    group_rows("Maternal age", 6,8) %>%
+    group_rows("Maternal education",  9,11) %>%
+    group_rows("Birthweight (gram)", 12, 14) %>%
+    footnote(general = table_note, general_title = "Note.", footnote_as_chunk = T, threeparttable = T) 
+
+```
+
+
+
+```{r}
+# group_by(df_table, group_BF_noBF) %>% summarise(n= n())
+# group_by(df_table, Group) %>% summarise(n= n())
+# group_by(df_table, group_strict) %>% summarise(n= n())
+# group_by(df_table, group) %>% summarise(n= n())
+```
+
+```{r}
+source("~/workspace/research_master/dpb/minor_research_project/article/analyses/gerben/adj_linear mixed model for Henrik to measure between groups changes.R")
+
+```
+
+
+
+```{r}
+permanova_table
+table_caption <- "Model parameters for two-way PERMANOVAs"
+pm_table <- 
+  kable(permanova_table, , align = c("l", rep("r", 5)), booktabs = T, caption = table_caption,  escape = T) %>%
+    kable_styling(latex_options = c("scale_down")) %>%
+    group_rows("Before CC", 1,5) %>%
+    group_rows("After CC", 6,10) %>%
+    footnote(general = table_note, general_title = "Note.", footnote_as_chunk = T, threeparttable = T)
+```
+
+
+```{r}
+# f table for LME4
+table_caption <- "Log fold change within childcare groups for significant linear mixed effects models. "
+table_note <- "FDR adjustment based on Benjamini Hochberg correction."
+f_table <- 
+  kable(my_f_table, booktabs = T, caption = table_caption,  escape = T, longtable = T) %>%
+    kable_styling(full_width = T) %>%
+    footnote(general = table_note, general_title = "Note.", footnote_as_chunk = T, threeparttable = T)
+#latex_options = c("scale_down") 
+```
+\newpage 
+
+### Appendix
+
+#### A Tables
+
+
+
+```{r results = 'asis'}
+final_table
+```
+
+```{r results = 'asis'}
+pm_table
+```
+
+```{r results = 'asis'}
+f_table
+```
+
+```{r}
+getwd()
+setwd("analyses/tables")
+```
+
+```{r}
+#purl("apa_demographics.Rmd", "apa_tables")
+```
+
