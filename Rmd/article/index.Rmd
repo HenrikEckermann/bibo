@@ -9,13 +9,19 @@ author:
     address       : "Kreuzfurth 10, 47559 Kranenburg, Germany"
     email         : "h.eckermann@student.ru.nl"
 
+  - name          : "Gerben Hermes"
+    affiliation   : "2"
+
+  - name          : "Carolina de Weerth"
+    affiliation   : "1"
+    
+
 affiliation:
   - id            : "1"
     institution   : "Radboud University Nijmegen"
+  - id            : "2"
+    institution   : "Wageningen University"
 
-
-author_note: |
-  I want to thank Prof. Carolina de Weerth and Dr. Gerben Hermes for their support and supervision.
 
 abstract: |
   Attending center based childcare (CC) at three months of life can be an important life changing event that includes major stressors such as long maternal separations and frequently changing caregivers. These in turn may alter the composition of the gut microbiota with possible implications for future health outcomes. As part of an ongoing longitudinal study, we investigated whether CC compared to being cared by the mother at home alters the composition of the gut microbiota and whether breastfeeding buffers the potential effect of CC on the microbiota. Stool samples of infants who entered CC (n=49) and control infants (n=49) were obtained before and four weeks after CC entrance. Using permutational MANOVA and linear mixed effects modeling we did not observe an universal effect of CC on microbiota  composition but mainly individual responses, which warrant further investigation. 
