@@ -164,7 +164,7 @@ library(papaja)
 
 
 # there are extra steps required for papaja here because when using rowselection
-# R adds and extra colum to tiblle. Therefore, I make two sep table first 
+# R adds and extra colum to tibble. Therefore, I make two sep table first 
 
 perm_1 <- 
   mutate_if(pm1, is.numeric, funs(round(., 3))) %>%

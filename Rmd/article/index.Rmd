@@ -34,7 +34,7 @@ abstract: |
 keywords          : "microbiota, childcare, breastfeeding, early life stress"
 wordcount         : "138"
 
-bibliography      : ["/Users/henrikeckermann/workspace/bibtex/cc_ref.bib"]
+bibliography      : ["/Users/henrikeckermann/workspace/research_master/minor_research_project/article/analyses/bibo/Rmd/article/cc_ref.bib"]
 
 figsintext        : no
 figurelist        : yes
@@ -56,20 +56,13 @@ library("papaja")
 ```
 
 
-```{r child = 'body.Rmd'}
+```{r child = 'results.Rmd'}
 ```
 
 ```{r results = 'asis'}
-final_table
+#final_table
 ```
 
-```{r results = 'asis'}
-pm_table
-```
-
-```{r results = 'asis'}
-f_table
-```
 
 
 

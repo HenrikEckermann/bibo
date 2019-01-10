@@ -1,0 +1,28 @@
+1. What to do if the wake up time is not provided? I was asked to check if the difference between 1st sample and wakeup time is < 15 minutes. If not I should make a note. When the wake up time is not provided we cannot know that difference and wondered how you handled that.
+
+This criterium was not used. If we do not know, we assume it is correctly taken. 
+
+2. When was a medication considered “systemic”? I was asked to exclude children who took systemic medications. Several of the infants for example take antihistamines. I am not aware of interaction with cortisol but those medications almost all have been shown to have system immune regulatory actions in some way that differs between the type of antihistamine.  
+
+
+
+farmacotheraoeutisch compas 
+
+if recipe, then not. 
+
+
+3. What should I do in the following situations:  
+- all samples of one day are provided on the correct or the same date but the wake up sample was forgotten and has been provided on a different day. Should I then exclude all those samples of that day, only the wake up sample or only keep the wake up sample or just keep all samples? 
+exclude the samples from the wrong day. Reason: 
+
+- What if e.g. half of the samples have been provided on the right day and half on another day? (e.g. ID 452)
+
+there is no rule then 
+
+
+- 227 Medication: Check type of injection?! ("Got his immunotherapy injections.") is not documented, ask Roseriet NOTE: if possible check illnesses at age 10, ask Roseriet
+- 420 Two disease symptoms: Night before he went to the school party. He feels sick: diarrhea, abdominal pain. I still include this one because he obvisously played the soccer game...
+- I need to ask Roseriet what I should do if one value is too late. Just exlude that one sample or exclude all values of the day? because I can imagine that for circadian cortisol e.g. the first sample is quite critical.
+- ID: 409 it must have been a saturday based on notes, thus I changed date to 25 and 26 feb because is this closest weekend. Will ask Roseriet
+- ID: 452 for both days samples have been provided on separate days and therefore I excluded them all.
+

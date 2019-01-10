@@ -123,7 +123,7 @@ E.E.clr <- t(f.e[,grep("rab.sample", colnames(f.e))])
 rownames(E.E.clr) <- gsub("rab.sample.", "", rownames(E.E.clr))
 exp <- apply(E.E.clr, 1, function(x) 2^x)
 E.clr <- t(apply(exp, 2, function(x) log2(x) - mean(log2(x)) ))
-
+E.clr[1, ] %>% sum()
 # using the propr package to calculate E(phi) and E(rho)
 #x <- ALDEx2::aldex.clr(f, conds, denom = "all", verbose=FALSE, mc.samples=128)
 rho.all <- propr::aldex2propr(f.x, how = "perb")
@@ -246,7 +246,7 @@ We have previously given extensive guidance on the interpretation of these plots
 When we plot the individual OTUs separately as in Figure 3 (`R_Block_3`) on a loadings plot the resulting plot contains qualitative information on both differential relative abundance of OTUs and on association between OTUs. The distance and direction of OTU from the center of the plot is proportional to the standard deviation of the CLR value of that OTU in the dataset [@aitchison2002biplots]. In theory, OTUs that have a short link between them, (i.e., are nearly the same direction and distance from the origin) should be compositionally associated. However, our ability to make this conclusion is tempered by the proportion of variance explained by the first two principle components, and in practice at least 90% of the variance needs to be explained for  a high confidence determination. Thus, the compositional PCA biplot, or the loadings plot itself, should be used mainly for display, and the numerical differential relative abundance and compositional association measures should be used for quantitative insights.
 
 ```{r R_block_3, echo=F, fig.width=3.5, fig.height=4, fig.cap="Plot of the relationship between the OTUs from the SVD. Here each OTU is colored red if it was identified as having an effect size greater than 1. The two OTUs with the  $\\rho$ value closest to one are highlighed in blue. See later sections for an explanation of effect size and $\\rho$."}
-
+pcx$rotation
 # calculation of SVD in R_Block_2
 plot(pcx$rotation[,1], pcx$rotation[,2],
     main="loadings", xlab=xlab, cex=0.5,

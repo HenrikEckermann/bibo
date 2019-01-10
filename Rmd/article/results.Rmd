@@ -1,0 +1,122 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+
+```{r}
+library(here)
+library(tidyverse)
+library(papaja)
+library(ggpubr)
+library(microbiome)
+source("https://raw.githubusercontent.com/HenrikEckermann/in_use/master/reporting.R")
+load(here("data/cc_analyses_workspace.RData"))
+
+```
+# 3. Results 
+
+
+## 3.1. Microbiota composition
+Thirteen genus like groups from the _Actinobacteria_, _Firmicutes_, _Proteobacteria_ and phyla showed an average abundance of $\gt 0.05$% in at least 20% of the samples (Figure 1). Overall the microbiota was dominated by _Bifidobacterium_ with an average abundance of more than 50%. Followed by facultative anaerobic _Bacilli_ (_Streptococcus spp_, _Enterococcus_, _Lactobacilllus_ and _Granulicatella_). The general variation of relative abundance of all taxa was quite high, with _Bifidobacterium_ for instance ranging from 0.2% to 89%. 
+
+Figure 2 shows microbiota composition (Aitchison distance) for the first four principal components within the CC (A) and within the noCC (B) group. The starting point of the arrow indicate the microbiota composition at T0, whereas the endpoint corresponds the composition at T1. The plots do not reveal a systematic shift due to CC attendance over time. Instead, microbiota composition development between time points appears to be highly individual.
+
+
+```{r fig.show=T, fig.cap='Development of microbiota composition over time within CC (A and C) and no CC (B and D).'}
+ggarrange(
+    biplot_cc[[1]] + xlim(-12.5, 5) + ggtitle('A'), 
+    biplot_cc[[2]] + xlim(-12.5, 5) + ggtitle('B'), 
+    biplot_cc[[3]] + xlim(-12.5, 5) + ggtitle('C'), 
+    biplot_cc[[4]] + xlim(-12.5, 5) + ggtitle('D'), 
+    nrow = 2, ncol = 2, 
+    common.legend = T)
+
+
+ggarrange(
+    biplot_time[[1]] + xlim(-12.5, 5) + ggtitle('A'), 
+    biplot_time[[2]] + xlim(-12.5, 5) + ggtitle('B'), 
+    biplot_time[[3]] + xlim(-12.5, 5) + ggtitle('C'), 
+    biplot_time[[4]] + xlim(-12.5, 5) + ggtitle('D'), 
+    nrow = 2, ncol = 2, 
+    common.legend = T)
+        
+biplot_time_2 <- biplot(pseq.clr, facet = "cc", connect_series = "time")
+ggarrange(biplot_time_2[[1]], biplot_time_2[[1]], nrow = 2)
+
+```
+
+```{r}
+otus.clr %>% column_to_rownames("sample_id") %>%
+  t() %>% as.data.frame() %>% summarise_all(sum)
+```
+
+## 3.2 Permutational multivariate ANOVA 
+We performed PERMANOVA for 10 imputed datasets (see methods), which all yield similar results. We compared the overall community composition using PERMANOVA based on Aitchison distance metric. An assumption for PERMANOVA is multivariate homogeneity of group dispersions (variances) [@Anderson2017]. We used the function _betadisper_ [@vegan2017], which utilizes the _PERMDISP2_ procedure as implemented by Marti Anderson and found that this assumption was met for the factors _childcare_ `r report_f(hg_cc[1, 5], hg_cc[1, 1], hg_cc[2, 1], hg_cc[1, 5])`, _time_ `r report_f(hg_time[1, 4], hg_time[1, 1], hg_time[2, 1], hg_time[1, 5])` and the subgroups that result out of the interaction of _time_ and _cc_ `r report_f(hg_groups[1, 4], hg_groups[1, 1], hg_groups[2, 1], hg_groups[1, 5])`. According to PERMANOVA, breastfeeding and age significantly predicted overall community composition  (see table x). Figure 5 shows the genera that mostly changed as a function of each predictor. There is no significant effect of CC over time on overall community composition. 
+
+```{r}
+apa_table(pm_table)
+```
+
+
+```{r fig.show=T, fig.cap='Top Taxa that differ most as a function of each predictor. CC = childcare.'}
+ggarrange(
+    pmps[[1]] + ggtitle('A'), 
+    pmps[[2]] + ggtitle('B'), 
+    pmps[[3]] + ggtitle('C'), 
+    pmps[[4]] + ggtitle('D'), 
+    pmps[[5]] + ggtitle('E'),
+    nrow = 3, ncol = 2, common.legend = T)
+```
+
+
+
+## 3.3 Hierarchical linear models
+
+### 3.3.1 Differential abundance with LME
+
+We evaluated the model assumptions of homogeneity of variance and normality of residuals individually for each model by visual inspection of residual- and quantile-quantile plots. Importantly, most of our models showed moderate violations of the homogeneity of variance and normality of residual assumptions. Several models violated both model assumptions severely. In contrast, the Bayesian generalized linear models that will be described (3.2.2) are more flexible and seem more appropriate to model the skewed and long tailed distributions of clr-transformed bacterial abundance. 
+
+We set contrasts in R such that the intercept reflects the CC group at timepoint "post" and the coefficients of the the model (cc and time) reflect the desired group comparisons. In the frequentist paradigm, our hypothesis would predict that both coefficients are significantly different from zero for more bacterial genus abundances than expected by chance. We adjusted for multiple testing based on @benjamini1995 allowing for 20% of false discoveries. Table x shows all coefficients (incl. covariates) that remained significant after adjusting for multiple testing ($q\leq.2$). The LMEs indicate a small signal of CC on the abundance of some genera. 
+
+```{r}
+library(papaja)
+library(knitr)
+library(kableExtra)
+pm_table
+apa_table(pm_table)
+comp_all_df <- comp_all_df %>% arrange(comparison)
+
+kable(comp_all_df, "latex", caption = "Comparison of mu between groups",
+  booktabs = T) %>%
+    kable_styling() %>%
+    group_rows("Age", 1, 20) %>%
+    group_rows("Breastfeeding", 21, 25)
+
+```
+
+### 3.3.2 Differential abundance with Bayesian GLM  
+
+We modeled clr-transformed bacterial abundance using the generalized gaussian distribution with constant variance $\sigma$ and skewness parameter $\alpha$. As for the LMEs, the parameter $\mu$ is modeled as a linear function of the predictors "cc", "time", "breastfeeding" and "age". Note that $\mu$ no longer represents the mean as $\alpha \neq 0$. In line with our hypothesis, we found that there were no differences in $\mu$ between CC and noCC at T0 as well as between T0 and T1 within the noCC group. But $\mu$ was different between "cc" and "nocc" at time "post" and when comparing "pre" to "post" within CC for more genera than could be expected by chance. Figures x-x show the mean differences of $\mu$ for those comparisons including 95% highest posterior density interval (HPDI). Given our assumptions, if the probability that $\mu$ of one group is different from the other is greater than 95%, 99% or 99.9%, this is indicated by "*", "**" and "***", respectively.
+  
+### 3.3.2 Alpha diversity
+Alpha diversity indices (Shannon, Inverse Simpson and Gini-Simpson) were calculated using the _microbiome_ package before the clr-transformation. LMEs and Bayesian hierarchical linear regression reached similar results. Here, we only present results of the Bayesian models as pooling of the parameter estimates after multiple imputation is straightforward. We found that after controlling for breastfeeding and age, the alpha-diversity was slightly lower for infants after CC attendance compared to all other groups. Table x shows the estimated difference in the parameter $\mu$ of the generalized normal distribution between groups for each diversity index. Assuming alpha-diversity is gaussian distributed with constant parameters $\sigma$ (variance) and  $\alpha$ (skewness parameter), the p-value represents the probability that $\mu$ is lower for the group in the left column compared to the group in the right column. Figure 3 shows alpha diversity for each subject (black rectangles) for each subgroup. It furthermore shows the posterior distribution of $\mu$ (red dots) including the narrowest interval containing 95% of the probability mass (highest posterior density interval). We see that $\mu$ was highest in the CC group before entrance and lowest of all groups after CC attendance. However, we see large individual variation within each group and the difference in $\mu$ is small.
+
+
+```{r}
+# ggarrange(p_div[[1]] + ggtitle("A"), 
+#           p_div[[2]] + ggtitle("B"), 
+#           p_div[[3]] + ggtitle("C"),
+#           ncol = 3)
+
+
+```
+
+
+
+## 3.4 Random Forest 
+
+RF is a tree based ensemble learning method that is well suited for classification based on microbiome data [@knightsSupervisedClassificationHuman2011]. We randomly selected 80% of the collected samples that constituted the training data set. We first tuned the RF models based on out-of-bag error. Node splitting was based on the gini criterion. Then we evaluated whether we can correctly classify CC based on 130 clr-transformed genus abundances using the hold out set. According to our hypotheses, we would expect to be able to classify whether an infant in the test data set belongs to the CC group at T1. In contrast, at T0 we would expect prediction accuracy to be lower since there were no differences between CC groups based on the (demographic) variables obtained. However, neither the T0 model, nor the model for T1 achieved a high prediction accuracy suggesting that there was no systematic effect of childcare entrance on microbiota composition. Table 2 shows the confusion matrix for each model.
+

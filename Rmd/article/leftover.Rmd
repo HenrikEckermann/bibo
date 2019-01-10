@@ -1,0 +1,1 @@
+Breastfeeding `r report_f(pm_table["bf_count_s", "F.model"], pm_table["bf_count_s", "Df"], pm_table["bf_count_s", "Residuals"], pm_table["bf_count_s", "Pr(>F)"])` and age `r report_f(pm_table["age_d_s", "F.model"], pm_table["age_d_s", "Df"], pm_table["age_d_s", "Residuals"], pm_table["age_d_s", "Pr(>F)"])`
