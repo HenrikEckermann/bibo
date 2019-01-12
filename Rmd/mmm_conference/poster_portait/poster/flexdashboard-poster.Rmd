@@ -1,0 +1,199 @@
+---
+title: "**Early Life Stress and Gut Microbiota Composition"
+output: 
+  flexdashboard::flex_dashboard:
+    self_contained: false
+    orientation: rows
+    source: embed
+    social: menu
+    css: ["resources/fontawesome-all.css", "mmm_2019.css"]
+---
+
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(here)
+library(hrbrthemes)
+library(patchwork)
+library(ggpubr)
+library(microbiome)
+
+# Setup knitr
+knitr::opts_chunk$set(
+  echo = FALSE, message = FALSE, warning = FALSE,
+  # Save all figures in the output dir, you have to include them explicitly
+  # with an <img> tag
+  fig.path = "../output/img/", fig.show = "hide"
+)
+```
+
+
+
+
+
+## Row 1 {data-height=15}
+
+###
+
+
+<table style="width:100%">
+<tr>
+  <td><center><h3>
+  **Does early attendance to center-based childcare alter children’s intestinal microbiota?**
+  </h3></center></td>
+  <td rowspan="2">
+  <img src="resources/logo.png" style="width:128px"></img>
+  </td>
+  <td rowspan="2">
+  <img src="resources/logo_wurr.png" style="width:128px"></img>
+  </td>
+</tr>
+<tr><td><center>
+  **Henrik Eckermann, Gerben Hermes, Willem de Vos and Carolina de Weerth** &nbsp;
+  </center></td>
+</tr>
+<tr><td><center>
+  <i class="fab fa-twitter"></i> \@Henne412 &nbsp;
+  <i class="fas fa-envelope"></i> henrikeckermann87\@gmail.com &nbsp;
+  <i class="fab fa-github"></i> <a href="https://github.com/HenrikEckermann" style="text-decoration:none;">github.com/HenrikEckermann</a>
+  </center></td>
+</tr>
+</table> 
+
+<hr>
+
+
+
+
+
+
+## Row 2 {data-height=75}
+
+### **Introduction**
+
+#### Research Question
+
+- **Does attendance to center-based childcare alter gut microbiota composition?**
+
+#### Motivation
+
+- Gut microbial composition plays an important role in physical and mental health.
+
+- Animal studies suggest: 
+    - a sensitive period in early life with regard to the influence of microbes on the host.  
+    - that early life stress disrupts the gut microbial ecosystem with negative health consequences.  
+- Entering center based childcare can be considered an early life stressor in humans that leads to prolonged increases in cortisol levels as compared to caring in the home environment.
+
+    
+#### Contribution
+- To investigate whether childcare attendance is a disruptive factor for the developing microbiota.
+
+
+### **Results**
+
+Here you would describe some amazing results.
+Since this poster is about making a poster, I show the last poster.
+
+**Fig. 1: Even the wisest cannot tell. For the mirror… shows many things…**
+<img src="poster.png" alt="What will I see?" style="width:100%"></img>
+
+
+
+```{r volcano-plot, fig.width=6, fig.height=3}
+# Prepare a figure for later use
+filled.contour(volcano)
+```
+
+
+
+#### Reproducible results with R
+
+As we have come to expect, results from R computations can be included as well.
+Since adjusting figure positions will be almost always necesary,
+figures are by default saved to `output/img/` and not shown on the poster.
+You need to manually include them using a <img> tag as shown below.
+
+```html
+**Fig. 1: Place the volcano figure where you please.**
+<img src="img/volcano-plot-1.png" style="width:100%"></img>
+```
+
+
+#### Output for printing
+
+A png file is produced by `scripts/render-poster.R`.
+By default it is set to use a 300ppi resolution and A1 size.
+For now, some testing is necessary to adjust scale and poster size.
+
+
+### **Discussion**
+
+
+```{r new-standard}
+# Get reference image
+download.file(
+  "https://imgs.xkcd.com/comics/standards.png", mode = "wb",
+  destfile = "../output/img/standards.png"
+)
+```
+
+
+Since there are so many tools that can be used to prepare posters,
+and not a single one satisfies my needs,
+I prepared this *other* tool to... nah it still is missing things.
+
+**Fig. 3: Some authoritative content**
+<img src="img/standards.png" style="width:100%"></img>
+
+
+#### Limitations
+
+Since the png file is generated as a snapshot of the html poster,
+several limitations should be considered:
+
+- Resolution is very limited by the resources in your system
+- Larger formats require much more resources to render
+- Complex posters can take longer to load, so you have to try different delays
+- The preview shown in `poster/poster_frame.html` could be very different to
+the final rendered image
+- "I can't fit enough text/figures!"  
+  ↑ that one's on you, nobody likes a crammed poster
+
+<hr>
+
+#### Contact information
+
+Oscar de León  
+<a
+  title="Universidad del Valle de Guatemala"
+  href="mailto:odeleon@ces.uvg.edu.gt?Subject=Influenza%20incidence%20Guatemala"
+  target="_top"
+>odeleon@ces.uvg.edu.gt</a>  
+<a
+  title="GitHub profile"
+  href="https://github.com/odeleongt"
+  target="_blank"
+>https://github.com/odeleongt</a>
+
+
+
+**Aknowledgements:** 
+
+The time had come to face the fact that I was long overdue posting this template.
+
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">The time has come to face the fact that I must create a poster. It&#39;s been a while. What&#39;s the least painful way to do this these days?</p>&mdash; Kara Woo <a href="https://twitter.com/kara_woo/status/856644892319137792">April 24, 2017</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+
+## Row 3 {data-height=10} 
+
+### **Fig. 2: Place the volcano figure where you please.** {data-width=50}
+
+<img src="img/volcano-plot-1.png" style="height:100%"></img>
+
+
+
+### {data-width=50 .small}
+
+**References**

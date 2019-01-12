@@ -40,7 +40,7 @@ opts_chunk$set(warning=F, message=F)
   </td>
 </tr>
 <tr><td><center>
-  **Henrik Eckermann, Gerben Hermes and Carolina de Weerth** &nbsp;
+  **Henrik Eckermann, Gerben Hermes, Willem de Vos and Carolina de Weerth** &nbsp;
   </center></td>
 </tr>
 <tr><td><center>
@@ -65,9 +65,9 @@ set the `render_print` option to `FALSE`.
 
 
 
-## Body row {data-height=85}
+## Body row {data-height=75}
 
-### **Introduction** {data-width=400}
+### **Introduction** {data-width=500}
 
 #### Research Question
 
@@ -86,15 +86,16 @@ set the `render_print` option to `FALSE`.
 #### Contribution
 - To investigate whether childcare attendance is a disruptive factor for the developing microbiota.
 
-### **Alpha diversity, Beta diversity and relative abundances between groups and time points PRE/POST** {data-width=800}
+### **Alpha diversity, Beta diversity and relative abundances between groups and time points PRE/POST** {data-width=700}
 
 ```{r, eval = TRUE,fig.height=10, fig.width=15, dpi=300}
 theme_set(theme_minimal(base_size = 18))
 biplot_time_2 <- biplot(pseq.clr, facet = "cc", connect_series = "time")
-biplot_time_2[[1]] + {(p_div[[1]] | differential_abundance_plots_article) + plot_layout(widths =  c(1, 3))} + plot_layout(ncol = 1, heights = c(1, 1))
+# biplot_time_2[[1]] + ggtitle("A: Beta diversity: Aitchison distance for the CC and control group") + {(p_div[[1]] + ggtitle("B: Alpha diversity between groups") | differential_abundance_plots_article + ggtitle("C: Mean difference in parameter 'MU'")) + plot_layout(widths =  c(1, 3))} + plot_layout(ncol = 1, heights = c(1, 1))
+
+biplot_time_2[[1]] + ggtitle("A: Beta diversity: Aitchison distance for the CC and control group") + theme(plot.title = element_text(size = 15, face = "bold")) + {(p_div[[1]] + ggtitle("B: Alpha diversity between groups") + theme(plot.title = element_text(size = 15, face = "bold")) + (comparison_plots_article +ggtitle("C: Mean difference in parameter 'MU'") + theme(plot.title = element_text(size = 15, face = "bold")) | comparison_plots_article_2 + ggtitle("C: Mean difference in parameter 'MU'") + theme(plot.title = element_text(size = 15, face = "bold")))) + plot_layout(widths =  c(1, 3))} + plot_layout(ncol = 1, heights = c(1, 1))
 
 
-#differential_abundance_plots
 ```
 
 
@@ -102,7 +103,7 @@ biplot_time_2[[1]] + {(p_div[[1]] | differential_abundance_plots_article) + plot
 
 
 
-### **Data and Methods** {data-width=400}
+### **Data and Methods** {data-width=500}
 
 #### Research Design
 
@@ -126,13 +127,13 @@ biplot_time_2[[1]] + {(p_div[[1]] | differential_abundance_plots_article) + plot
 
 
 
-## Footer row {data-height=5} 
+## Footer row {data-height=15} 
 
 ### Results {data-width=45}
 
-- Slight decrease in alpha diversity in the childcare attendance group (A).
-- Small differences in relative abundances between the groups after controlling for age and breastfeeding (B). 
-- There was no effect of childcare attendance on overall composition (C).
+- There was no effect of childcare attendance on overall composition (A).
+- Slight decrease in alpha diversity in the childcare attendance group (B).
+- Small differences in relative abundances between the groups after controlling for age and breastfeeding (C). 
 - High variation: Many infants showed an opposite trend compared to the group level effect.
 
 

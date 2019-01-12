@@ -2,8 +2,8 @@
 
 body{
   font-family: "Arial";
-  /*background-color: #e5f6ff;*/
-  background-color: #b3c3de;
+  /*background-color: #e5f6ff;#b3c3de*/
+  background-color: #e0e0e0;
  
 }
 
@@ -35,3 +35,18 @@ a:hover {
     text-decoration: none;
 }
 */
+
+
+.navbar {
+  background-color: #ef8a62;
+  border-color:black;
+}
+
+
+/* .chart-title {
+  border-bottom: 1px solid #d7d7d7;
+  color: #666;
+  font-size: 14px;
+  font-weight: 300;
+  padding: 7px 10px 4px;
+} */
