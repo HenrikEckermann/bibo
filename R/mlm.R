@@ -9,7 +9,7 @@
 libloc <- Sys.getenv("R_LIBS")
 # dont use R_LIBS on local machine
 if (libloc != "") {
-  pkgs <- list("tidyverse", "here", "furrr", "glue", "brms")
+  pkgs <- list("tidyverse", "here", "future", "furrr", "glue", "brms")
   lapply(pkgs, function(pkg) {
     library(pkg, character.only = TRUE, lib.loc = libloc)
   })
@@ -44,10 +44,10 @@ test_t <- brm(
     formula = bf(
         abundance ~ 1 + cc*time + age_d_s + bf_count_s + sibling*csection + 
             (1 + cc*time + age_d_s + bf_count_s + sibling*csection|genus), 
-        sigma ~ 1 + cc*time + age_d_s + bf_count_s + sibling*csection + 
-            (1 + cc*time + age_d_s + bf_count_s + sibling*csection|genus)),
+        sigma ~ 1 + genus),
     data = test_data,
     control = list(adapt_delta = 0.95, max_treedepth = 15),
-    file = glue("{BIBO}/rdata/testmodel")
+    file = glue("{BIBO}/rdata/testmodel"), 
+    cores = future::availableCores()
 )
 
