@@ -1,6 +1,6 @@
 # Mind Mood Microbes poster
 
 
-This poster code is copied from https://github.com/weiyangtham/sole2018_poster_example.
+This poster was inspired by https://github.com/weiyangtham/sole2018_poster_example.
 
-Thanks to Wei-Yang Tham for providing source code!
+Thanks to Wei-Yang Tham and @odeleongt https://odeleongt.github.io/postr/!

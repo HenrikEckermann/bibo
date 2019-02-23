@@ -15,6 +15,7 @@ library(hrbrthemes)
 library(patchwork)
 library(ggpubr)
 library(microbiome)
+library(ggrepel)
 load(here("data/cc_analyses_workspace.RData"))
 source("https://raw.githubusercontent.com/HenrikEckermann/in_use/master/reporting.R")
 source("https://raw.githubusercontent.com/HenrikEckermann/in_use/master/mb_helper.R")
@@ -25,94 +26,9 @@ library(knitr)
 opts_chunk$set(warning=F, message=F)
 ```
 
+```{r}
+# modified biplot function 
 
-## Header row {data-height=20}
-
-###
-
-<table style="width:100%">
-<tr>
-  <td><center><h3>
-  **Does early entrace to center-based childcare alter children’s intestinal microbiota?**
-  </h3></center></td>
-</tr>
-<tr><td><center>
-  **Henrik Eckermann, Gerben Hermes, Willem de Vos and Carolina de Weerth** &nbsp;
-  </center></td>
-</tr>
-<tr><td><center>
-  <i class="fas fa-envelope"></i> henrikeckermann87\@gmail.com &nbsp;
-  <i class="fab fa-github"></i> <a href="https://github.com/HenrikEckermann" style="text-decoration:none;">github.com/HenrikEckermann</a>
-  <i class="fab fa-twitter"></i> \@Henne412 &nbsp;
-  </center></td>
-</tr>
-</table> 
-
-<hr>
-
-<!--
-**Abstract** This paragraph will be rendered inside a wide box right below the
-poster title and authors information.
-The `render_print` format option is set to `TRUE` by default in this poster
-sample, and will result in `postr::render` being called when knitting the
-document (see `help("flex_dashboard_poster", package = postr)`).
-To disable this (recommended in the initial stages of poster development)
-set the `render_print` option to `FALSE`.
--->
-
-
-
-## Middle row {data-height=90}
-
-### **1 Introduction** 
-
-#### Research Question
-
-- **Does entrance to center-based childcare at three months of age alter gut microbiota composition?**
-
-#### Motivation
-
-- Gut microbial composition plays an important role in physical and mental health.
-
-- Animal studies suggest: 
-    - a sensitive period in early life with regard to the influence of microbes on the host.  
-    - that early life stress disrupts the gut microbial ecosystem with negative health consequences.  
-- Entering center-based childcare can be considered an early life stressor in humans that leads to prolonged increases in cortisol levels as compared to care in the home environment.
-
-    
-#### Contribution
-- To gain insight into environmental factors that might influence the early development of the gut microbiome.
-
-
-### **2 Data and Methods** 
-
-#### Research Design
-
-- Longitudinal study (BIBO Study) 
-- Two groups: Childcare (n = 49) vs Home (n = 49)
-- Microbiota sampling pre- and 4 weeks post entrance into childcare (Home group had similar age and sampling time points). 
-
-#### Data
-
-- Microbial determination at genus like level with the Human Intestinal Tract Chip (HITChip)
-- Data was treated as compositional (centered-log-ratio-transformation)
-- Covariates: Breastfeeding (average feedings/day) and age
-    
-#### Statistical Analyses:
-- PCA (Aitchison distance)
-- PERMANOVA (Aitchison distance)
-- Hierarchical Linear Mixed Models (Gaussian family)
-- Bayesian Hierarchical Generalized Linear Models (Generalized normal distribution)
-- Randfom Forest Classification
-
-
-
-
-## plot row {data-height=110}
-
-###&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **3 Results: Aitchison distance between samples for Childcare (A1, A3) and Home (A2). Alpha diversity between groups (B)**
-
-```{r, eval = TRUE, fig.width=20, fig.height=10, dpi=300}
 biplot <- function(
   pseq_clr, 
   scaling_factor = 10, 
@@ -188,8 +104,7 @@ biplot <- function(
     create_plot <- function(data, pc = 1, pc1, pc2, title = "") {
         data %>%        
         ggplot(aes_string(glue("PC{pc}"), glue("PC{pc+1}"), label = "sample_id", color = color)) +
-            geom_text(data = pcx_rot, aes_string(glue("PC{pc}"), glue("PC{pc+1}"), label = "taxa"), color = "#999999", size = 3, alpha = 0.4) +
-            geom_text(data = pcx_rot_fit, aes_string(glue("PC{pc}"), glue("PC{pc+1}"), label = "taxa"), color = otu_color, size = 3) +
+            geom_text_repel(data = pcx_rot_fit, aes_string(glue("PC{pc}"), glue("PC{pc+1}"), label = "taxa"), color = otu_color, size = 5) +
             xlab(glue("PC{pc}: [{pc1*100}%]")) +  ylab(glue("PC{pc+1}: [{pc2*100}%]")) +
             scale_y_continuous(sec.axis = ~./scaling_factor) +
             scale_x_continuous(sec.axis = ~./scaling_factor) +
@@ -235,9 +150,99 @@ biplot <- function(
                        
     pc_plots
 }
+```
+
+
+## Header row {data-height=20}
+
+###
+
+<table style="width:100%">
+<tr>
+  <td><center><h3>
+  **Does early entrance to center-based childcare alter children’s intestinal microbiota?**
+  </h3></center></td>
+</tr>
+<tr><td><center>
+  **Henrik Eckermann, Gerben Hermes, Willem de Vos and Carolina de Weerth** &nbsp;
+  </center></td>
+</tr>
+<tr><td><center>
+  <i class="fas fa-envelope"></i> henrikeckermann87\@gmail.com &nbsp;
+  <i class="fab fa-github"></i> <a href="https://github.com/HenrikEckermann" style="text-decoration:none;">github.com/HenrikEckermann</a>
+  </center></td>
+</tr>
+</table> 
+
+<hr>
+
+<!--
+**Abstract** This paragraph will be rendered inside a wide box right below the
+poster title and authors information.
+The `render_print` format option is set to `TRUE` by default in this poster
+sample, and will result in `postr::render` being called when knitting the
+document (see `help("flex_dashboard_poster", package = postr)`).
+To disable this (recommended in the initial stages of poster development)
+set the `render_print` option to `FALSE`.
+-->
+
+
+
+## Middle row {data-height=90}
+
+### **1 Introduction** 
+
+#### Research Question
+
+- **Does entrance to center-based childcare at three months of age alter gut microbiota composition?**
+
+#### Motivation
+
+- Gut microbial composition plays an important role in physical and mental health.
+
+- Animal studies suggest: 
+    - a sensitive period in early life with regard to the influence of microbes on the host.  
+    - that early life stress disrupts the gut microbial ecosystem with negative health consequences.  
+- Entering center-based childcare can be considered an early life stressor in humans that leads to prolonged increases in cortisol levels as compared to care in the home environment.
+
+    
+#### Contribution
+- To gain insight into environmental factors that might influence the early development of the gut microbiome.
+
+
+### **2 Data and Methods** 
+
+#### Research Design
+
+- Longitudinal study (BIBO Study) 
+- Two groups: Childcare (n = 49) vs Home (n = 49)
+- Microbiota sampling pre- and 4 weeks post entrance into childcare (Home group had similar age and sampling time points). 
+
+#### Data
+
+- Microbial determination at genus like level with the Human Intestinal Tract Chip (HITChip)
+- Data was treated as compositional (centered-log-ratio-transformation)
+- Covariates: Breastfeeding (average feedings/day) and age
+    
+#### Statistical Analyses:
+- PCA (Aitchison distance)
+- PERMANOVA (Aitchison distance)
+- Hierarchical Linear Mixed Models (Gaussian family)
+- Bayesian Hierarchical Generalized Linear Models (Generalized normal distribution)
+- Random Forest Classification
+
+
+
+
+## plot row {data-height=110}
+
+###&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **3 Results: Aitchison distance between samples for Childcare (A1, A3) and Home (A2). Alpha diversity between groups (B)**
+
+```{r, eval = TRUE, fig.width=20, fig.height=10, dpi=300}
+
 
 toptaxa <- comp_all_df %>%
-    filter(prob < 0.025 | prob > 0.975, abs(mean) >= 0.2, comparison %in% c("ccpost_noccpost", "ccpost_ccpre")) %>%
+    filter(prob < 0.05 | prob > 0.95, abs(mean) >= 0.15, comparison %in% c("ccpost_noccpost", "ccpost_ccpre")) %>%
     select(-prob) %>%
     arrange(desc(abs(mean)))
 
@@ -248,17 +253,17 @@ biplot_time_2 <- biplot(pseq.clr, split = "cc", connect_series = "time", otu_col
 scaling_factor <- 10
 
 
-(biplot_time_2[[1]] + xlim(-12.5, 5) + ylim(-5.25, 8) + 
-  scale_y_continuous(sec.axis = ~./scaling_factor) + 
-  scale_x_continuous(sec.axis = ~./scaling_factor) +
+(biplot_time_2[[1]] + 
+  scale_y_continuous(limits = c(-5.25, 8), sec.axis = ~./scaling_factor) + 
+  scale_x_continuous(limits = c(-12.5, 5), sec.axis = ~./scaling_factor) +
   ggtitle("A1 Overall composition: Childcare") + 
   theme(plot.title = element_text(size = 20, face = "bold", color = "#999999")) |
-  biplot_time_2[[2]] + xlim(-12.5, 5) + ylim(-5.25, 8) + 
-  scale_y_continuous(sec.axis = ~./scaling_factor) + 
-  scale_x_continuous(sec.axis = ~./scaling_factor) +
+  biplot_time_2[[2]] +
+  scale_y_continuous(limits = c(-5.25, 8), sec.axis = ~./scaling_factor) + 
+  scale_x_continuous(limits = c(-12.5, 5), sec.axis = ~./scaling_factor) +
   ggtitle("A2 Overall composition: Home") +
   theme(plot.title = element_text(size = 20, face = "bold", color = "#999999"))) /
-  (biplot_time_2[[3]] + xlim(-6.25, 5) + ylim(-5.5, 7) + 
+  (biplot_time_2[[3]] + xlim(-7, 5) + ylim(-5.5, 7) + 
   scale_y_continuous(sec.axis = ~./scaling_factor) + 
   scale_x_continuous(sec.axis = ~./scaling_factor) +
   ggtitle("A3 Overall composition (PC 3&4): Childcare") +
@@ -279,9 +284,9 @@ scaling_factor <- 10
 ### **3 Results (continued)** {data-width=841*2/3}
 
 - no effect of childcare entrance on overall composition (A1-A3).
-- Breastfeeding and age explain 3.5% of variation. 
-- a slight decrease in alpha diversity in the childcare group (B).  
-- Significant differences in relative abundances between Childcare and Home after controlling for age and breastfeeding (red taxa in A1 - A3 showed absolute log fold change $\geq$ 0.2 $\leq$ 1).
+- breastfeeding and age explain 3.5% of variation in overall composition. 
+- slight decrease in alpha diversity in the childcare group (B).  
+- significant differences in relative abundances between Childcare and Home after controlling for age and breastfeeding (red taxa in A1 - A3 indicate absolute log fold change $\geq$ 0.2 $\leq$ 1).
 - High individual variation: Many infants showed an opposite trend compared to the average effect with regard to relative abundances and alpha diversity (see paths in B).
 
 

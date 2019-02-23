@@ -1,1 +1,35 @@
 Breastfeeding `r report_f(pm_table["bf_count_s", "F.model"], pm_table["bf_count_s", "Df"], pm_table["bf_count_s", "Residuals"], pm_table["bf_count_s", "Pr(>F)"])` and age `r report_f(pm_table["age_d_s", "F.model"], pm_table["age_d_s", "Df"], pm_table["age_d_s", "Residuals"], pm_table["age_d_s", "Pr(>F)"])`
+
+
+
+
+
+I cut out the LME4:
+
+## Methods description 
+
+Furthermore, we used the _lme4_ package [@Bates2015] for linear mixed effects modeling (LME) to assess for alpha diversity indices and each genus level separately whether CC has an effect over time. The LME was specified with CC interacting with time controlling for breastfeeding, child-sex and age. Partial pooling was applied where possible to reach a maximal model according to the recommendations by @Barr2013. We used the function _pool_ as implemented in the _mice_ package to get pooled estimates. Benjamini-Hochberg correction [@benjamini1995; @Stephens2016] was applied to account for multiple testing.
+
+## 3.3 Hierarchical linear models
+
+### 3.3.1 Differential abundance with LME
+
+We evaluated the model assumptions of homogeneity of variance and normality of residuals individually for each model by visual inspection of residual- and quantile-quantile plots. Importantly, most of our models showed moderate violations of the homogeneity of variance and normality of residual assumptions. Several models violated both model assumptions severely. In contrast, the Bayesian generalized linear models that will be described (3.2.2) are more flexible and seem more appropriate to model the skewed and long tailed distributions of clr-transformed bacterial abundance. 
+
+We set contrasts in R such that the intercept reflects the CC group at timepoint "post" and the coefficients of the the model (cc and time) reflect the desired group comparisons. We adjusted for multiple testing based on @benjaminiControllingFalseDiscovery1995 allowing for 20% of false discoveries. Table x shows all coefficients (incl. covariates) that remained significant after adjusting for multiple testing ($q\leq.2$). The LMEs indicate a small signal of CC on the abundance of some genera. 
+
+```{r}
+library(papaja)
+library(knitr)
+library(kableExtra)
+
+comp_all_df <- comp_all_df %>% arrange(comparison)
+
+kable(comp_all_df, "latex", caption = "Comparison of mu between groups",
+  booktabs = T) %>%
+    kable_styling() %>%
+    group_rows("Age", 1, 20) %>%
+    group_rows("Breastfeeding", 21, 25)
+
+``` 
+

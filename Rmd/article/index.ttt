@@ -1,0 +1,85 @@
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+[tbp]
+\begin{center}
+\begin{threeparttable}
+\caption{\label{tab:unnamed-chunk-8}Descriptive statistics for demographic variables of infants and mothers included in the present study.}
+\begin{tabular}{lll}
+\toprule
+ & \multicolumn{1}{c}{CC (n = 49)} & \multicolumn{1}{c}{HOME (n = 49)}\\
+\midrule
+**Gender** &  & \\
+\ \ \ male & 29 & 25\\
+\ \ \ female & 20 & 24\\
+**Age (weeks)** &  & \\
+\ \ \ mean (sd) & 12.8 $\pm$ 2.3 & 11.2 $\pm$ 0.9\\
+\ \ \ min & 8.6 & 10.0\\
+\ \ \ max & 17.9 & 13.1\\
+**Maternal Education** &  & \\
+\ \ \ mean (sd) & 32.9 $\pm$ 3.0 & 32.2 $\pm$ 3.6\\
+\ \ \ min & 25.1 & 24.9\\
+\ \ \ max & 42.0 & 40.1\\
+**Birthweight** &  & \\
+\ \ \ mean (sd) & 3630.4 $\pm$ 508.9 & 3636.0 $\pm$ 438.4\\
+\ \ \ min & 2708 & 2810\\
+\ \ \ max & 4600 & 4700\\
+**Breastfeeding (Birth - PRE)** &  & \\
+\ \ \ mean (sd) & 5.1 $\pm$ 2.9 & 6.0 $\pm$ 2.2\\
+\ \ \ min & 0 & 0\\
+\ \ \ max & 8.9 & 11.4\\
+**Breastfeeding (PRE - POST)** &  & \\
+\ \ \ mean (sd) & 4.0 $\pm$ 2.8 & 3.8 $\pm$ 3.0\\
+\ \ \ min & 0 & 0\\
+\ \ \ max & 8.5 & 8.5\\
+\bottomrule
+\addlinespace
+\end{tabular}
+\begin{tablenotes}[para]
+\normalsize{\textit{Note.} CC = childcare. Breastfeeding refers to the average number of breast-feedings per day.}
+\end{tablenotes}
+\end{threeparttable}
+\end{center}
+\end{table*}
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+[tbp]
+\begin{center}
+\begin{threeparttable}
+\caption{\label{tab:unnamed-chunk-9}Table x. Model Output PERMANOVA}
+\begin{tabular}{lllllll}
+\toprule
+Model Parameter & \multicolumn{1}{c}{Sum of Squares} & \multicolumn{1}{c}{Mean Sum of Squares} & \multicolumn{1}{c}{F} & \multicolumn{1}{c}{Df} & \multicolumn{1}{c}{p} & \multicolumn{1}{c}{R Square}\\
+\midrule
+time & 58.44 & 58.444 & 1.469 & 1.00 & 0.118 & 0.01\\
+cc & 52.64 & 52.636 & 1.323 & 1.00 & 0.192 & 0.01\\
+age\_d\_s & 79.55 & 79.553 & 2 & 1.00 & 0.023 & 0.01\\
+bf\_count\_s & 197.06 & 197.06 & 4.954 & 1.00 & 0.001 & 0.02\\
+time:cc & 36.23 & 36.229 & 0.911 & 1.00 & 0.506 & 0.00\\
+Residuals & 7,558.55 & 39.782 & - & 190.00 & - & 0.95\\
+Total & 7,982.47 & - & - & 195.00 & - & 1.00\\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{center}
+\end{table*}
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+[tbp]
+\begin{center}
+\begin{threeparttable}
+\caption{\label{tab:unnamed-chunk-13}Estimated model parameters alpha diversity.}
+\begin{tabular}{llll}
+\toprule
+Parameter & \multicolumn{1}{c}{Mean} & \multicolumn{1}{c}{95\% HPDI} & \multicolumn{1}{c}{P(Parameter < 0)}\\
+\midrule
+Alpha & -1.60 & [-6.22, 2.21] & 0.75\\
+CC\_POST - CC\_PRE & -0.29 & [-0.52, -0.07] & 0.99\\
+CC\_POST - HOME\_POST & -0.22 & [-0.4, -0.03] & 0.99\\
+CC\_PRE - HOME\_PRE & 0.05 & [-0.14, 0.23] & 0.31\\
+HOME\_POST - HOME\_PRE & -0.03 & [-0.25, 0.19] & 0.60\\
+Sigma & 0.33 & [0.27, 0.39] & 0.00\\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{center}
+\end{table*}

@@ -1,10 +1,16 @@
 ---
 output:
-  pdf_document: default
-  html_document: default
   word_document: default
+  html_document: default
+  pdf_document: default
+
 ---
 
+
+```{r echo=F}
+library(knitr)
+opts_chunk$set(warning=F, message=F, echo=F, results="hide")
+```
 
 ```{r}
 library(here)
@@ -12,111 +18,289 @@ library(tidyverse)
 library(papaja)
 library(ggpubr)
 library(microbiome)
+library(ggrepel)
 source("https://raw.githubusercontent.com/HenrikEckermann/in_use/master/reporting.R")
 load(here("data/cc_analyses_workspace.RData"))
-
 ```
+
+
 # 3. Results 
 
-
 ## 3.1. Microbiota composition
-Thirteen genus like groups from the _Actinobacteria_, _Firmicutes_, _Proteobacteria_ and phyla showed an average abundance of $\gt 0.05$% in at least 20% of the samples (Figure 1). Overall the microbiota was dominated by _Bifidobacterium_ with an average abundance of more than 50%. Followed by facultative anaerobic _Bacilli_ (_Streptococcus spp_, _Enterococcus_, _Lactobacilllus_ and _Granulicatella_). The general variation of relative abundance of all taxa was quite high, with _Bifidobacterium_ for instance ranging from 0.2% to 89%. 
+Thirteen genus like groups from the _Actinobacteria_, _Firmicutes_, _Proteobacteria_ and phyla showed an average abundance of $\geq 0.05$ % in at least 20% of the samples (Figure 1). Overall the microbiota was dominated by _Bifidobacterium_ with an average abundance of more than 50%. Followed by facultative anaerobic _Bacilli_ (_Streptococcus spp_, _Enterococcus_, _Lactobacilllus_ and _Granulicatella_). The general variation of relative abundance of all taxa was quite high, with _Bifidobacterium_ for instance ranging from 0.2% to 89%. 
 
-Figure 2 shows microbiota composition (Aitchison distance) for the first four principal components within the CC (A) and within the noCC (B) group. The starting point of the arrow indicate the microbiota composition at T0, whereas the endpoint corresponds the composition at T1. The plots do not reveal a systematic shift due to CC attendance over time. Instead, microbiota composition development between time points appears to be highly individual.
+Figures 2 and 3 show microbiota composition (Aitchison distance) for the first four principal components within the CC (A) and within the HOME (B) group. The starting points of the arrows indicate the microbiota composition in space at time-poin PRE, whereas the endpoint corresponds the composition at time-poin POST. There appear to be no differences in location between CC and HOME at PRE or POST. Also, we did not identify a clearly uniform direction of the shifts over time in either group. Figure 2 shows that within the CC group, a few infants score relatively high on PC2 and all but one move towards the center indicating shifts in the relative abundance of _Granulicatella_ and _Enterococcus_, which load high on PC2. Altogether, microbiota composition development between time points appears to be highly individual and unsystematic. 
 
-
-```{r fig.show=T, fig.cap='Development of microbiota composition over time within CC (A and C) and no CC (B and D).'}
-ggarrange(
-    biplot_cc[[1]] + xlim(-12.5, 5) + ggtitle('A'), 
-    biplot_cc[[2]] + xlim(-12.5, 5) + ggtitle('B'), 
-    biplot_cc[[3]] + xlim(-12.5, 5) + ggtitle('C'), 
-    biplot_cc[[4]] + xlim(-12.5, 5) + ggtitle('D'), 
-    nrow = 2, ncol = 2, 
-    common.legend = T)
-
-
-ggarrange(
-    biplot_time[[1]] + xlim(-12.5, 5) + ggtitle('A'), 
-    biplot_time[[2]] + xlim(-12.5, 5) + ggtitle('B'), 
-    biplot_time[[3]] + xlim(-12.5, 5) + ggtitle('C'), 
-    biplot_time[[4]] + xlim(-12.5, 5) + ggtitle('D'), 
-    nrow = 2, ncol = 2, 
-    common.legend = T)
-        
-biplot_time_2 <- biplot(pseq.clr, facet = "cc", connect_series = "time")
-ggarrange(biplot_time_2[[1]], biplot_time_2[[1]], nrow = 2)
-
-```
-
-```{r}
-otus.clr %>% column_to_rownames("sample_id") %>%
-  t() %>% as.data.frame() %>% summarise_all(sum)
-```
-
-## 3.2 Permutational multivariate ANOVA 
-We performed PERMANOVA for 10 imputed datasets (see methods), which all yield similar results. We compared the overall community composition using PERMANOVA based on Aitchison distance metric. An assumption for PERMANOVA is multivariate homogeneity of group dispersions (variances) [@Anderson2017]. We used the function _betadisper_ [@vegan2017], which utilizes the _PERMDISP2_ procedure as implemented by Marti Anderson and found that this assumption was met for the factors _childcare_ `r report_f(hg_cc[1, 5], hg_cc[1, 1], hg_cc[2, 1], hg_cc[1, 5])`, _time_ `r report_f(hg_time[1, 4], hg_time[1, 1], hg_time[2, 1], hg_time[1, 5])` and the subgroups that result out of the interaction of _time_ and _cc_ `r report_f(hg_groups[1, 4], hg_groups[1, 1], hg_groups[2, 1], hg_groups[1, 5])`. According to PERMANOVA, breastfeeding and age significantly predicted overall community composition  (see table x). Figure 5 shows the genera that mostly changed as a function of each predictor. There is no significant effect of CC over time on overall community composition. 
-
-```{r}
-apa_table(pm_table)
-```
-
-
-```{r fig.show=T, fig.cap='Top Taxa that differ most as a function of each predictor. CC = childcare.'}
-ggarrange(
-    pmps[[1]] + ggtitle('A'), 
-    pmps[[2]] + ggtitle('B'), 
-    pmps[[3]] + ggtitle('C'), 
-    pmps[[4]] + ggtitle('D'), 
-    pmps[[5]] + ggtitle('E'),
-    nrow = 3, ncol = 2, common.legend = T)
-```
-
-
-
-## 3.3 Hierarchical linear models
-
-### 3.3.1 Differential abundance with LME
-
-We evaluated the model assumptions of homogeneity of variance and normality of residuals individually for each model by visual inspection of residual- and quantile-quantile plots. Importantly, most of our models showed moderate violations of the homogeneity of variance and normality of residual assumptions. Several models violated both model assumptions severely. In contrast, the Bayesian generalized linear models that will be described (3.2.2) are more flexible and seem more appropriate to model the skewed and long tailed distributions of clr-transformed bacterial abundance. 
-
-We set contrasts in R such that the intercept reflects the CC group at timepoint "post" and the coefficients of the the model (cc and time) reflect the desired group comparisons. In the frequentist paradigm, our hypothesis would predict that both coefficients are significantly different from zero for more bacterial genus abundances than expected by chance. We adjusted for multiple testing based on @benjamini1995 allowing for 20% of false discoveries. Table x shows all coefficients (incl. covariates) that remained significant after adjusting for multiple testing ($q\leq.2$). The LMEs indicate a small signal of CC on the abundance of some genera. 
-
-```{r}
-library(papaja)
-library(knitr)
-library(kableExtra)
-pm_table
-apa_table(pm_table)
-comp_all_df <- comp_all_df %>% arrange(comparison)
-
-kable(comp_all_df, "latex", caption = "Comparison of mu between groups",
-  booktabs = T) %>%
-    kable_styling() %>%
-    group_rows("Age", 1, 20) %>%
-    group_rows("Breastfeeding", 21, 25)
-
-```
-
-### 3.3.2 Differential abundance with Bayesian GLM  
-
-We modeled clr-transformed bacterial abundance using the generalized gaussian distribution with constant variance $\sigma$ and skewness parameter $\alpha$. As for the LMEs, the parameter $\mu$ is modeled as a linear function of the predictors "cc", "time", "breastfeeding" and "age". Note that $\mu$ no longer represents the mean as $\alpha \neq 0$. In line with our hypothesis, we found that there were no differences in $\mu$ between CC and noCC at T0 as well as between T0 and T1 within the noCC group. But $\mu$ was different between "cc" and "nocc" at time "post" and when comparing "pre" to "post" within CC for more genera than could be expected by chance. Figures x-x show the mean differences of $\mu$ for those comparisons including 95% highest posterior density interval (HPDI). Given our assumptions, if the probability that $\mu$ of one group is different from the other is greater than 95%, 99% or 99.9%, this is indicated by "*", "**" and "***", respectively.
-  
-### 3.3.2 Alpha diversity
-Alpha diversity indices (Shannon, Inverse Simpson and Gini-Simpson) were calculated using the _microbiome_ package before the clr-transformation. LMEs and Bayesian hierarchical linear regression reached similar results. Here, we only present results of the Bayesian models as pooling of the parameter estimates after multiple imputation is straightforward. We found that after controlling for breastfeeding and age, the alpha-diversity was slightly lower for infants after CC attendance compared to all other groups. Table x shows the estimated difference in the parameter $\mu$ of the generalized normal distribution between groups for each diversity index. Assuming alpha-diversity is gaussian distributed with constant parameters $\sigma$ (variance) and  $\alpha$ (skewness parameter), the p-value represents the probability that $\mu$ is lower for the group in the left column compared to the group in the right column. Figure 3 shows alpha diversity for each subject (black rectangles) for each subgroup. It furthermore shows the posterior distribution of $\mu$ (red dots) including the narrowest interval containing 95% of the probability mass (highest posterior density interval). We see that $\mu$ was highest in the CC group before entrance and lowest of all groups after CC attendance. However, we see large individual variation within each group and the difference in $\mu$ is small.
 
 
 ```{r}
-# ggarrange(p_div[[1]] + ggtitle("A"), 
-#           p_div[[2]] + ggtitle("B"), 
-#           p_div[[3]] + ggtitle("C"),
-#           ncol = 3)
+# modified biplot function 
+
+biplot <- function(
+  pseq_clr, 
+  scaling_factor = 10, 
+  color = NULL, 
+  text = FALSE, 
+  split_by = FALSE, 
+  facet = FALSE, 
+  connect_series = FALSE, 
+  subject_id = "subject_id", 
+  filter_samples = FALSE,
+  otu_color = "#ef8a62",
+  toptaxa = toptaxa
+  ) {
+    
+    
+    # PCA
+    pcx <- pseq_clr %>% 
+        otu_to_df() %>%
+        column_to_rownames("sample_id") %>%
+        prcomp()
+    
+    
+    # rename colnames 
+    rename_taxa <- function(taxa) {
+      if (taxa == "Clostridium \\(sensu stricto\\)") return("Clostridium_sensu_stricto")
+      new_taxa = gsub("\\.", "", taxa)
+      new_taxa = gsub(" ", "", new_taxa)
+      return(new_taxa)
+    }
+    # extract loadings
+    pcx_rot <- 
+        pcx$rotation %>%
+            as.tibble() %>%
+            mutate_all(function(x) x * scaling_factor) %>%
+            add_column(taxa = rownames(pcx$rotation)) %>%
+            mutate(taxa = rename_taxa(taxa))
+    pcx_rot_fit <- filter(pcx_rot, taxa %in% toptaxa)
+                       
+    # combine first 4 PCs with metadata
+    princomps <- pcx$x %>% as.data.frame() %>%
+        rownames_to_column("sample_id") %>%
+        select(PC1, PC2, PC3, PC4, sample_id)
+    data <- pseq_clr %>% 
+                sd_to_df() %>% 
+                left_join(princomps, by = "sample_id")
+    
+    # apply filtering
+    if (filter_samples != FALSE) data <- data %>% filter(sample_id %in% filter_samples)
+                       
+    # avoid errors due to wrong class
+    if (length(color) > 0) data[[color]] <-  as.factor(data[[color]])
+    
+    # if connecting by time, data must be arranged accordingly and also time/subject must be factor
+    if (connect_series != FALSE) { 
+        data[[subject_id]] <-  as.factor(data[[subject_id]])
+        data[[connect_series]] <-  as.factor(data[[connect_series]])
+        data <- data %>% arrange_(subject_id, connect_series)
+    } 
+ 
+    
+
+                       
 
 
+    # how much variance do pcs explain?
+    pc1 <- round(pcx$sdev[1]^2/sum(pcx$sdev^2),3)
+    pc2 <- round(pcx$sdev[2]^2/sum(pcx$sdev^2),3)
+    pc3 <- round(pcx$sdev[3]^2/sum(pcx$sdev^2),3)
+    pc4 <- round(pcx$sdev[4]^2/sum(pcx$sdev^2),3)
+                       
+                       
+    # define plottting function 
+    create_plot <- function(data, pc = 1, pc1, pc2, title = "") {
+        data %>%        
+        ggplot(aes_string(glue("PC{pc}"), glue("PC{pc+1}"), label = "sample_id", color = color)) +
+            geom_text_repel(data = pcx_rot_fit, aes_string(glue("PC{pc}"), glue("PC{pc+1}"), label = "taxa"), color = otu_color, size = 9) +
+            xlab(glue("PC{pc}: [{pc1*100}%]")) +  ylab(glue("PC{pc+1}: [{pc2*100}%]")) +
+            scale_y_continuous(sec.axis = ~./scaling_factor) +
+            scale_x_continuous(sec.axis = ~./scaling_factor) +
+            scale_color_manual(values = c("#fc8d62", "#8da0cb", "#66c2a5",'#1f78b4','#33a02c','#e31a1c')) +
+            ggtitle(title) +
+            theme_bw(base_size = 20)  
+    }
+
+    
+    # split by (to produce bigger plots than possible just by facet_wrap or to use in addition as grouping possibility)
+    if (split_by != FALSE) {
+        data <- data %>% group_by_(split_by) %>% nest()
+        pc_plots_1 <- map2(data[[2]], data[[1]], ~create_plot(data = .x, title = .y, pc = 1, pc1, pc2))
+        pc_plots_2 <- map2(data[[2]], data[[1]], ~create_plot(data = .x, title = .y, pc = 3, pc3, pc4))
+        pc_plots <- append(pc_plots_1, pc_plots_2)
+    } else {
+        # plots
+        p12 <- create_plot(data = data, pc = 1, pc1, pc2)
+        p34 <- create_plot(data = data, pc = 3, pc3, pc4)
+        pc_plots <- list(p12, p34)  
+    }
+                       
+
+                       
+    # apply optionals 
+    # text 
+    if (text) {
+        pc_plots <- map(pc_plots, ~.x + geom_text(size = 8))
+    }else{
+        pc_plots <- map(pc_plots, ~.x + geom_point(size = 5))
+    }
+
+                    
+    # path 
+    if (connect_series != FALSE) {
+      pc_plots <- map(pc_plots, ~.x + geom_path(aes_string(group = subject_id), arrow = arrow(length = unit(0.8,"cm"), ends = "last"), alpha = 0.3, size = 1.8))
+                                      
+                      
+    } 
+                       
+    # facetting 
+    if (facet != FALSE) pc_plots <- map(pc_plots, ~.x + facet_wrap(as.formula(glue(".~{facet}"))))  
+                       
+    pc_plots
+}
+```
+
+
+
+```{r}
+# define which taxa will be printed
+toptaxa <- comp_all_df %>%
+    filter(prob < 0.05 | prob > 0.95, abs(mean) >= 0.18) %>%
+    select(-prob) %>%
+    arrange(desc(abs(mean)))
+```
+
+
+```{r fig.width=30, fig.height = 15, fig.show=T, fig.cap='Development of microbiota composition over time within CC (A and C) and HOME (B and D).'}
+biplot_time_2 <- biplot(pseq.clr, split = "cc", connect_series = "time", otu_color = "#ca0020", toptaxa = toptaxa$genus)
+# ggarrange(
+#     biplot_cc[[1]] + xlim(-12.5, 5) + ggtitle('A'), 
+#     biplot_cc[[2]] + xlim(-12.5, 5) + ggtitle('B'), 
+#     biplot_cc[[3]] + xlim(-12.5, 5) + ggtitle('C'), 
+#     biplot_cc[[4]] + xlim(-12.5, 5) + ggtitle('D'), 
+#     nrow = 2, ncol = 2, 
+#     common.legend = T)
+
+scaling_factor <- 10
+library(patchwork)
+
+# (biplot_time_2[[1]] + 
+#   scale_y_continuous(limits = c(-5.25, 8), sec.axis = ~./scaling_factor) +
+#   scale_x_continuous(limits = c(-12.5, 5), sec.axis = ~./scaling_factor) + ggtitle('A1') |
+#   biplot_time_2[[2]] +
+#   scale_y_continuous(limits = c(-5.25, 8), sec.axis = ~./scaling_factor) +
+#   scale_x_continuous(limits = c(-12.5, 5), sec.axis = ~./scaling_factor) + ggtitle('B1')) / 
+#   (biplot_time_2[[3]] + 
+#   scale_y_continuous(limits = c(-5.5, 7), sec.axis = ~./scaling_factor) +
+#   scale_x_continuous(limits = c(-6.25, 5), sec.axis = ~./scaling_factor) + ggtitle('A2') |
+#   biplot_time_2[[4]] +
+#   scale_y_continuous(limits = c(-5.5, 7), sec.axis = ~./scaling_factor) +
+#   scale_x_continuous(limits = c(-6.25, 5), sec.axis = ~./scaling_factor) + ggtitle('B2')) + plot_layout() &theme_bw(base_size =40)
+```
+
+
+```{r fig.width=30, fig.height = 15, fig.show=T, fig.cap='First two principal components illustrating development of microbiota composition over time within CC (A) and HOME (B).'}
+biplot_time_2[[1]] + 
+  scale_y_continuous(limits = c(-5.25, 8), sec.axis = ~./scaling_factor) +
+  scale_x_continuous(limits = c(-12.5, 5), sec.axis = ~./scaling_factor) + ggtitle('A') +
+  biplot_time_2[[2]] +
+  scale_y_continuous(limits = c(-5.25, 8), sec.axis = ~./scaling_factor) +
+  scale_x_continuous(limits = c(-12.5, 5), sec.axis = ~./scaling_factor) + ggtitle('B') + plot_layout(ncol = 2) & theme_bw(base_size = 40)
+```
+
+```{r fig.width=30, fig.height = 15, fig.show=T, fig.cap='Third and fourth principal component illustrating development of microbiota composition over time within CC (A) and HOME (B).'}
+biplot_time_2[[3]] + 
+  scale_y_continuous(limits = c(-5.5, 7), sec.axis = ~./scaling_factor) +
+  scale_x_continuous(limits = c(-6.25, 5), sec.axis = ~./scaling_factor) + ggtitle('A') +
+  biplot_time_2[[4]] +
+  scale_y_continuous(limits = c(-5.5, 7), sec.axis = ~./scaling_factor) +
+  scale_x_continuous(limits = c(-6.25, 5), sec.axis = ~./scaling_factor) + ggtitle('B') + plot_layout(ncol = 2) & theme_bw(base_size = 40)
+```
+
+
+## 3.2 Effects of CC on microbiota composition
+
+Table 1 shows demographic variables for both groups. There was a significant difference in age between groups at PRE (_t_(62.43) = -4.54, _p_ < .001) and at POST (_t_(60.82) = -4.88, _p_ < .001) according to Welch's t-test. Besides that, there were no differences between groups for any of the remaining variables. To account for the differences in age and the naturally varying amounts of breastfeeding, we used both variables as covariates in all linear models.
+
+```{r results='asis'}
+# load tables 
+source(here("Rmd/article/tables/apa_tables_docx.R"))
+apa_table(list_of_demographics, escape = F, caption = table_caption_descr, note = table_note_descr)
+```
+
+### 3.2.1 Permutational multivariate ANOVA 
+We compared the overall community composition using PERMANOVA based on Aitchison distance metric. An assumption for PERMANOVA is multivariate homogeneity of group dispersions (variances) [@andersonPermutationalMultivariateAnalysis2017]. We used the function _betadisper_ [@R-vegan], which utilizes the _PERMDISP2_ procedure as implemented by Marti Anderson and found that this assumption was met for the factors "CC" `r report_f(hg_cc[1, 4], hg_cc[1, 1], hg_cc[2, 1], hg_cc[1, 5])`, "Time" `r report_f(hg_time[1, 4], hg_time[1, 1], hg_time[2, 1], hg_time[1, 5])`,
+"Csection" `r report_f(hg_csection[1, 4], hg_csection[1, 1], hg_csection[2, 1], hg_csection[1, 5])` and the subgroups that result out of the interaction of "Time" and "CC" `r report_f(hg_groups[1, 4], hg_groups[1, 1], hg_groups[2, 1], hg_groups[1, 5])`. However, the dispersions between the groups of "Sibling" were not homogeneous `r report_f(hg_sibling[1, 4], hg_sibling[1, 1], hg_sibling[2, 1], hg_sibling[1, 5])` and therefore the resulting test statistics should be interpreted with caution. We did not find a significant effect of CC over time on overall community composition (see table 2). Breastfeeding, sibling, csection and age significantly predicted overall community composition. Figure x shows the genera that mostly changed as a function of each significant predictor. Despite the low number of infants born by cesarian section, PERMANOVA indicates that cesarean section significantly influences gut microbiota composition with the strongest effect on Bifidobacteria.
+
+
+
+
+```{r results="asis"}
+rename_coefs <- c("Time", "CC", "Age", "Breastfeeding", "Time x CC", "Residuals", "Total")
+pm_table <- pm_table %>% mutate("Model Parameter" = rename_coefs)
+apa_table(pm_table, caption = "Model Output PERMANOVA", note = NULL)
+```
+
+
+```{r fig.width=15, fig.height = 7.5,fig.show=T, fig.cap='Top Taxa that differ most as a function of each predictor.'}
+(pmps[[4]] + ggtitle('A')  | pmps[[5]] + ggtitle('B')) / (pmps[[2]] + ggtitle('C')  | pmps[[3]] + ggtitle('D')) + plot_layout() & theme_bw(base_size = 18)
+```
+
+
+#### 3.2.2 Differential abundance testing (hierarchical GLM)
+
+We modeled clr-transformed bacterial abundance using the generalized Gaussian distribution with constant variance $\sigma$ and skewness parameter $\alpha$. The parameter $\mu$ is modeled as a linear function of the predictors "CC", "Time", "breastfeeding", "sibling", "csection" and "age". Figures x-x show the arithmetric means of the posterior distribution of the differences in $\mu$ between (figure x) or within (figure x) the groups with 95% highest probability density interval. We show only those genera that were different with high probability ($\geq 95$ %) in at least one comparison or predictor. Holding all other predictors constant, the GLM predicts a relative increase in the abundance of _Streptococcus mitis et rel_, _Streptococcus intermedius et rel_, _Granulicatella_ and _Enterococcus_ with increasing age. Breastfeeding is positively associated with _Streptococcus mitis et rel_ and _Staphylococcus_ and negatively associated with _Granulicatella_, _Collinsella_ and _Enterococcus_. Comparing CC to HOME, we find no clear difference at time-point PRE. At time-point POST we find a relative decrease in _Streptococcus intermedius et rel_. We find a stronger decrease of _Streptococcus mitis et rel_, _Streptococcus intermedius et rel_ and _Granulicatella_ in the CC group compared to HOME. These findings are mostly in line with the previously presented analyses and biplots. Since there is a low number number of c-sections in our group (9), the posterior distribution of the group difference between cesction is expected to be wide reflecting high uncertainty. Furthermore, the skeptical prior assigns highest probability to the effect being equal to zero. Nevertheless, the model detects a clear decrease in _Bifidobacterium_ for infants born by c-section, which is less strong for those infants with siblings.
+
+
+```{r fig.width=10, fig.height = 10, fig.show=T, fig.cap='Posterior distribution of the slopes of age and breastfeeding. Red color indicated that 95% of the posterior distribution is greater or smaller than zero.'}
+comparison_plots_article_3
+```
+
+```{r fig.width=10, fig.height = 10, fig.show=T, fig.cap='Posterior distribution of the difference in mu between CC and HOME. Red color indicated that 95% of the posterior distribution is greater or smaller than zero.'}
+comparison_plots_article_1
+```
+
+
+
+```{r fig.width=10, fig.height = 10, fig.show=T, fig.cap='Posterior distribution of the difference in mu within CC and HOME. Red color indicated that 95% of the posterior distribution is greater or smaller than zero.'}
+comparison_plots_article_2
+```
+
+
+```{r fig.width=30, fig.height = 10, fig.show=T, fig.cap='Individual paths between PRE and POST samples for Streoptococcus mitis et rel (A) and Streptococcus bovis et rel (B).'}
+ggarrange(abundance_paths[[1]] + ggtitle('A') + theme_bw(base_size = 30), 
+  abundance_paths[[2]] + ggtitle('B') + theme_bw(base_size = 30), common.legend = T) 
+```
+
+```{r fig.width=30, fig.height = 10, fig.show=T, fig.cap='Individual paths between PRE and POST samples for Streoptococcus intermedius et rel (A) and Granulicatella (B).'}
+ggarrange(abundance_paths[[3]] + ggtitle('A') + theme_bw(base_size = 30), 
+  abundance_paths[[4]] + ggtitle('B') + theme_bw(base_size = 30), common.legend = T) 
+```
+
+
+#### 3.2.3 Alpha diversity (hierarchical LM)
+ 
+
+Alpha-diversity was assumed to be Gaussian distributed with constant variance $\sigma$. Table x shows the estimated difference in the parameter $\mu$ of the generalized Gaussian distribution between groups as well as the estimated $\sigma$. There was no difference in alpha diversity within the HOME group or between HOME and CC before childcare entrance. However, comparing $\mu$ within CC or between HOME and CC after entrance, we see that diversity is lower in the CC group with high certainty suggesting that CC lead to a decrease in alpha diversity. Figure 3 shows alpha diversity for each subject for each subgroup. It furthermore shows the highest probability density interval of $\mu$ for each group. We see that $\mu$ was highest in the CC group before entrance and lowest of all groups after CC attendance. However, we see again large individual variation within each group. Besides that, cesarian section leads to an increase in alpha-diversity, whereas having a sibling is associated with a decreased alpha-diversity.
+
+```{r results="asis"}
+apa_table(
+  shannon_comparisons,
+  caption = "Estimated model parameters alpha diversity.",
+  added_stub_head = "Variables"
+)
+```
+
+
+
+
+```{r fig.width=10, fig.height = 10, fig.show=T, fig.cap='Observed values of Shannon alpha-diversity (points), individual paths and 95% highest probability density interval of the posterior distribution of mu when age and breastfeeding are kept at sample average.'}
+p_shannon + theme_bw(base_size = 20)
 ```
 
 
 
 ## 3.4 Random Forest 
 
-RF is a tree based ensemble learning method that is well suited for classification based on microbiome data [@knightsSupervisedClassificationHuman2011]. We randomly selected 80% of the collected samples that constituted the training data set. We first tuned the RF models based on out-of-bag error. Node splitting was based on the gini criterion. Then we evaluated whether we can correctly classify CC based on 130 clr-transformed genus abundances using the hold out set. According to our hypotheses, we would expect to be able to classify whether an infant in the test data set belongs to the CC group at T1. In contrast, at T0 we would expect prediction accuracy to be lower since there were no differences between CC groups based on the (demographic) variables obtained. However, neither the T0 model, nor the model for T1 achieved a high prediction accuracy suggesting that there was no systematic effect of childcare entrance on microbiota composition. Table 2 shows the confusion matrix for each model.
+According to our hypotheses, we would expect to be able to classify whether an infant belongs to the CC group at time-point POST. In contrast, at time-point PRE we would expect prediction accuracy to be lower since there should be no differences between CC and HOME. Neither the PRE model, nor the POST model achieved a higher prediction accuracy than 0.51 suggesting that there was no systematic effect of childcare entrance on microbiota composition. 
+
 
