@@ -7,3 +7,4 @@ models/*
 .Rproj.user
 .ipynb_checkpoints
 packrat/lib*/
+!rdata
