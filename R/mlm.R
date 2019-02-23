@@ -33,7 +33,7 @@ print("save worked!!")
 #------ ACTUAL CODING
 
 # load prepared data
-load(glue("{BIBO}/rdata/test_data.rds"))
+load(glue("{BIBO}/rdata/test_data2.rds"))
 # load own functions
 source("https://raw.githubusercontent.com/HenrikEckermann/in_use/master/mb_helper.R")
 source("https://raw.githubusercontent.com/HenrikEckermann/in_use/master/reporting.R")
