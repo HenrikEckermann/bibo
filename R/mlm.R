@@ -28,7 +28,7 @@ print(start)
 BIBO <- Sys.getenv("BIBO")
 # check if save works 
 check = tibble(test = 1, notest = 2)
-save(check, file = glue("{BIBO}/rdata/check.rds"))
+save(check, file = glue("{BIBO}/rdata/test_data.rds"))
 print("save worked!!")
 #------ ACTUAL CODING
 
