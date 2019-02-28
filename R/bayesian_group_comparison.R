@@ -64,7 +64,7 @@ models <- map(genera, function(genus) {
                   prior(normal(0, 0.2), class = b, dpar = sigma), 
                   prior(gamma(2, 0.2), class = nu)),
         cores = 4,
-        file = here(glue("models/student_{genus}"))
+        file = glue("{BIBO}/models/bayesian_student/student_{genus}")
     ) 
 })
 
