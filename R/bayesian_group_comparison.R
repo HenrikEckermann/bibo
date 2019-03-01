@@ -71,4 +71,4 @@ models <- map(genera, function(genus) {
 # store vector of succeful fits 
 diagnosed <- map2(models, genera, return_diag)
 
-save(models, diagnosed, file = glue{"{BIBO}/rdata/bayesian_student.rds"})
+save(models, diagnosed, file = glue("{BIBO}/rdata/bayesian_student.rds")
