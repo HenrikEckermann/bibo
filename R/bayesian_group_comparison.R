@@ -83,8 +83,8 @@ comparisons <- map(genera, function(genus) {
     if (return_diag(fit, genus)) {
       
         # calulate mu for each subgroup
-        plinp <- posterior_linpred(fit, nd, transform = T,  re.form = ~ 0) %>% as_tibble()
-        colnames(plinp) <- c(
+        plinp_mu <- posterior_linpred(fit, nd, transform = T,  re.form = ~ 0) %>% as_tibble()
+        colnames(plinp_mu) <- c(
             "home_pre_nosib_nocsec",
             "cc_pre_nosib_nocsec",
             "home_post_nosib_nocsec",
@@ -144,59 +144,68 @@ comparisons <- map(genera, function(genus) {
             
         
         
-        # calculate sigma
-        sigma_group <- posterior_samples(fit) %>%
-          mutate(
-            #
-            # homepre
-            home_pre_nosib_nocsec = b_sigma_Intercept,
-            home_pre_nosib_csec = (b_sigma_Intercept + b_sigma_csection1),
-            home_pre_sib_nocsec = (b_sigma_Intercept + b_sigma_sibling1),
-            home_pre_sib_csec = (b_sigma_Intercept + b_sigma_sibling1 + b_sigma_csection1 + `b_sibling1:csection1`),
-            homepre = (home_pre_nosib_nocsec + home_pre_sib_nocsec)/2,
-
-            # homepost
-            home_post_nosib_nocsec = (b_sigma_Intercept + b_sigma_timepost),
-            home_post_nosib_csec = (b_sigma_Intercept + b_sigma_timepost + b_sigma_csection1),
-            home_post_sib_nocsec = (b_sigma_Intercept + b_sigma_timepost + b_sigma_sibling1),
-            home_post_sib_csec = (b_sigma_Intercept + b_sigma_timepost + b_sigma_sibling1 + b_sigma_csection1 + `b_sibling1:csection1`),
-            homepost = (home_post_nosib_nocsec + home_post_sib_nocsec)/2,
-
-            # ccpre
-            cc_pre_nosib_nocsec = (b_sigma_Intercept + b_sigma_ccyes),
-            cc_pre_nosib_csec = (b_sigma_Intercept + b_sigma_ccyes + b_sigma_csection1),
-            cc_pre_sib_nocsec = (b_sigma_Intercept + b_sigma_ccyes + b_sigma_sibling1),
-            cc_pre_sib_csec = (b_sigma_Intercept + b_sigma_ccyes + b_sigma_sibling1 + b_sigma_csection1 + `b_sibling1:csection1`),
-            ccpre = (cc_pre_nosib_nocsec + cc_pre_sib_nocsec)/2,
-
-            # ccpost
-            cc_post_nosib_nocsec = (b_sigma_Intercept + b_sigma_ccyes + b_sigma_timepost),
-            cc_post_nosib_csec = (b_sigma_Intercept + b_sigma_ccyes + b_sigma_timepost + b_sigma_csection1),
-            cc_post_sib_nocsec = (b_sigma_Intercept + b_sigma_ccyes + b_sigma_timepost + b_sigma_sibling1),
-            cc_post_sib_csec = (b_sigma_Intercept + b_sigma_ccyes + b_sigma_timepost + b_sigma_sibling1 + b_sigma_csection1 + `b_sibling1:csection1`),
-            ccpost = (cc_post_nosib_nocsec + cc_post_sib_nocsec)/2,
-
-            # csection
-            nocsec = (cc_post_sib_csec + cc_post_nosib_csec + cc_pre_sib_csec + cc_pre_nosib_csec + home_post_sib_csec + home_post_nosib_csec + home_pre_sib_csec + home_pre_nosib_csec)/8,
-            csec = (cc_post_sib_nocsec + cc_post_nosib_nocsec + cc_pre_sib_nocsec + cc_pre_nosib_nocsec + home_post_sib_nocsec + home_post_nosib_nocsec + home_pre_sib_nocsec + home_pre_nosib_nocsec)/8,
-
-            # siblings 
-            sib = (home_pre_sib_csec + home_pre_sib_nocsec + home_post_sib_csec + home_post_sib_nocsec + cc_pre_sib_csec + cc_pre_sib_nocsec + cc_post_sib_csec + cc_post_sib_nocsec)/8,
-            nosib = (home_pre_nosib_csec + home_pre_nosib_nocsec + home_post_nosib_csec + home_post_nosib_nocsec + cc_pre_nosib_csec + cc_pre_nosib_nocsec + cc_post_nosib_csec + cc_post_nosib_nocsec)/8) %>%
-          mutate_if(is.numeric, exp) %>%
-          mutate(
-            # sigma diff
-            ccpost_homepost = ccpost - homepost,
-            ccpost_ccpre = ccpost - ccpre,
-            homepost_homepre = homepost - homepre, 
-            ccpre_homepre = ccpre - homepre,
-            sib_nosib = sib - nosib, 
-            csec_nocsec = csec - nocsec,
-
-            genus = genus) %>%
-          select(genus, ccpost_homepost, ccpost_ccpre, homepost_homepre, ccpre_homepre, sib_nosib, csec_nocsec)
+        # calulate sigma for each subgroup
+        plinp_sigma <- posterior_linpred(fit, nd, transform = T,  re.form = ~ 0, dpar = "sigma") %>% as_tibble()
+        colnames(plinp_sigma) <- c(
+            "home_pre_nosib_nocsec",
+            "cc_pre_nosib_nocsec",
+            "home_post_nosib_nocsec",
+            "cc_post_nosib_nocsec",
+            "home_pre_sib_nocsec",
+            "cc_pre_sib_nocsec",
+            "home_post_sib_nocsec", 
+            "cc_post_sib_nocsec",
+            "home_pre_nosib_csec",
+            "cc_pre_nosib_csec", 
+            "home_post_nosib_csec",
+            "cc_post_nosib_csec",
+            "home_pre_sib_csec",
+            "cc_pre_sib_csec",
+            "home_post_sib_csec",
+            "cc_post_sib_csec")
+            
+        # sigma comparisons (csec group separately)
+        sigma_group <- plinp_sigma %>%
+            mutate(
+                genus = genus, 
+                
+                # ccpre vs homepre 
+                homepre = (home_pre_nosib_nocsec + home_pre_sib_nocsec)/2,
+                ccpre = (cc_pre_nosib_nocsec + cc_pre_sib_nocsec)/2,
+                ccpre_homepre = ccpre - homepre,
+                
+                # ccpost vs ccpre
+                ccpost = (cc_post_nosib_nocsec + cc_post_sib_nocsec)/2,
+                ccpost_ccpre = ccpost -ccpre,
+                
+                # ccpost vs homepost
+                homepost = (home_post_nosib_nocsec + home_post_sib_nocsec)/2,
+                ccpost_homepost = ccpost - homepost,
+                
+                # homepost vs homepre
+                homepost_homepre = homepost - homepre,
+                
+                # sibling (if csec: home_pre_nosib_csec + cc_pre_nosib_csec + home_post_nosib_csec + cc_post_nosib_csec)
+                nosib = (home_pre_nosib_nocsec + cc_pre_nosib_nocsec + home_post_nosib_nocsec + cc_post_nosib_nocsec)/4,
+                sib = (home_pre_sib_nocsec + cc_pre_sib_nocsec + home_post_sib_nocsec + cc_post_sib_nocsec)/4,
+                sib_nosib = sib - nosib,
+                
+                # csec
+                nocsec = (home_pre_nosib_nocsec + cc_pre_nosib_nocsec + home_post_nosib_nocsec + cc_post_nosib_nocsec +
+                          home_pre_sib_nocsec + cc_pre_sib_nocsec + home_post_sib_nocsec + cc_post_sib_nocsec)/8,
+                csec = (home_pre_nosib_csec + cc_pre_nosib_csec + home_post_nosib_csec + cc_post_nosib_csec +
+                          home_pre_sib_csec + cc_pre_sib_csec + home_post_sib_csec + cc_post_sib_csec)/8,
+                csec_nocsec = csec - nocsec,
+                
+                # sib * csec
+                csec_sib = (home_pre_sib_csec + cc_pre_sib_csec + home_post_sib_csec + cc_post_sib_csec)/4,
+                csec_nosib = (home_pre_nosib_csec + cc_pre_nosib_csec + home_post_nosib_csec + cc_post_nosib_csec)/4,
+                csecsib_csecnosib = csec_sib - csec_nosib
+            ) %>%
+        select(genus, ccpre_homepre, ccpost_ccpre, ccpost_homepost, homepost_homepre, sib_nosib, csec_nocsec, csecsib_csecnosib)
         
-        return(list(mu_group, sigma_group)
+        return(list(mu_group, sigma_group))
+        
         
           
     } else {
