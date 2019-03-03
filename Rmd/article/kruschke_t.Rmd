@@ -1,0 +1,43 @@
+---
+  output: word_document
+  csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa.csl
+  bibliography: "/Users/henrikeckermann/workspace/research_master/minor_research_project/article/analyses/bibo/Rmd/article/bib/final.bib"
+
+---
+
+
+
+
+
+
+```{python}
+# merge bib files to final.bib
+import os 
+# set dir
+# os.chdir(f"{os.getcwd()}/../../bib")
+# open bib files
+with open("bib/my_library.bib", 'r+', encoding="utf-8") as lib:
+  library = lib.read()
+with open("bib/r-references.bib", "r") as pkg:
+  packages = pkg.read()
+
+
+with open("bib/final.bib", "w+", encoding="utf-8") as new_bibfile:
+  new_bibfile.write(packages + library)
+```
+
+
+
+To determine the univariate effect of CC attendance (i.e. the effect on each bacterial group individually), we performed Bayesian hierarchical generalized linear models as described Kruschke (2013). 
+Bayesian parameter estimation provides richer information than the classical null hypothesis group comparison [@kruschkeBayesianEstimationSupersedes2013]. For example, the method provides complete distributional information about model parameters such as means and standard deviations including credibility of all possible combinations of these parameters. Furthermore, it provides more precise information about the uncertainty when estimating group differences. The generalized linear model as presented by @kruschkeBayesianEstimationSupersedes2013 in particular is well suited to estimate the mean $\mu$ and standard deviation $\sigma$ when outliers are present as it utilizes the student t-distribution instead of the gaussian distribution. Distributions of clr-transformed bacterial abundance often have long tails and are skewed so that when estimated by a gaussian model the estimates are highly influenced by the outliers towards the long tail. Furthermore, standard linear models assume homogeneity of variance between groups. We know that this assumption is often violated in the context of differential abundance testing and it may even be that a "treatment" or in this case an environmental factor leads to a change in the variance of a distribution [@kruschkeBayesianEstimationSupersedes2013]. Our model allows the standard deviation $\sigma$ to vary between the groups by modeling $\sigma$ as a linear function of the two grouping variables CC (HOME vs CC) and time (PRE vs POST). We can write our model as:  
+
+
+$$y_{i} \sim T(\nu, \mu, \sigma)$$ 
+
+We model $\mu$ and $\sigma$ each as a linear function:   
+$$\mu_i = \beta_{0i[j]} + \beta_{1} \times group + \beta_{2} \times time + \beta_{3} \times group \times time + \beta_{4} \times age + \beta_{5} \times breastfeeding + \beta_{6} \times sibling + \beta_{7} \times csection + \beta_{8} \times sibling \times csection$$   
+$$\sigma_i = \beta_{\sigma 0} + \beta_{\sigma 1} \times group + \beta_{\sigma 2} \times time$$ 
+
+The *j* in $\beta_{0i[j]}$ indicates that each subject can deviate from the overall mean but the individual mean is partially pooled and dragged towards the overall mean. 
+
+The goal of the method is to predict differences in $\mu$ and $\sigma$ between the subgroups that arise from CC vs HOME and PRE vs POST. In the classical approach we would be concerned about limiting type I error rates. However, it makes more sense to think in terms of type S and type M errors in this context (see @gelmanWhyWeUsually2012; @gelmanTypeErrorRates2000). We used the standard prior distributions as implemented in *BRMS* except for a normal prior centered at 0 with a standard deviation of 1 for each effect. With a normal prior centered at 0, the Bayesian 95% credible interval (CI) is always more likely to include zero compared to the classical confidence interval. Thus, Bayesian inference is more conservative [@gelmanWhyWeUsually2012; @gelmanTypeErrorRates2000]. 

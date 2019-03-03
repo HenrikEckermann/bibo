@@ -39,7 +39,7 @@ source("https://raw.githubusercontent.com/HenrikEckermann/in_use/master/reportin
 
 # define the formula we use at the example of Bifidobacterium
 formula_mu <- glue("Bifidobacterium ~ time*cc + age_d_s + bf_count_s + sibling*csection + (1|subject_id)") %>% as.formula()
-formula_sigma <- sigma ~ 1 + time*cc
+formula_sigma <- sigma ~ 1 + time*cc + sibling*csection
 formula <- bf(formula_mu, formula_sigma)
 # see default priors brms
 get_prior(formula, data = data_imp[[1]], family = student)
@@ -72,3 +72,4 @@ models <- map(genera, function(genus) {
 diagnosed <- map2(models, genera, return_diag)
 
 save(models, diagnosed, file = glue("{BIBO}/rdata/bayesian_student.rds")
+
