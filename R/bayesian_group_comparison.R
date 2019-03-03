@@ -47,7 +47,7 @@ get_prior(formula, data = data_imp[[1]], family = student)
 # which makes the model more skeptical of large effect sizes
 
 genera <- colnames(data_imp[[1]])[29:158]
-
+exclude_vector <- c()
 # fit models 
 comparisons <- map(genera, function(genus) {
   
@@ -216,5 +216,5 @@ comparisons <- map(genera, function(genus) {
 })
 
 
-save(comparisons, file = glue("{BIBO}/rdata/bayesian_student.rds")
+save(comparisons, exclude_vector, file = glue("{BIBO}/rdata/bayesian_student.rds")
 
