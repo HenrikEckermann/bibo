@@ -103,7 +103,7 @@ comparisons <- map(genera, function(genus) {
             "cc_post_sib_csec")
             
         # mu comparisons (csec group separately)
-        mu_group <- plinp %>%
+        mu_group <- plinp_mu %>%
             mutate(
                 genus = genus, 
                 
@@ -215,8 +215,6 @@ comparisons <- map(genera, function(genus) {
     }
 })
 
-# store vector of succeful fits 
-diagnosed <- map2(models, genera, return_diag)
 
-save(comparisons, diagnosed, file = glue("{BIBO}/rdata/bayesian_student.rds")
+save(comparisons, file = glue("{BIBO}/rdata/bayesian_student.rds")
 
