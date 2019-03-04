@@ -53,7 +53,7 @@ comparisons <- map(genera, function(genus) {
   
     # specify model
     formula_mu <- glue("{genus} ~ time*cc + age_d_s + bf_count_s + sibling*csection + (1|subject_id)") %>% as.formula()
-    formula_sigma <- sigma ~ 1 + time*cc
+    formula_sigma <- sigma ~ 1 + time*cc + sibling*csection
     formula <- bf(formula_mu, formula_sigma)
     
     # fit model
