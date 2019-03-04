@@ -106,6 +106,7 @@ comparisons <- map(genera, function(genus) {
         mu_group <- plinp_mu %>%
             mutate(
                 genus = genus, 
+                dpar = "mu",
                 
                 # ccpre vs homepre 
                 homepre = (home_pre_nosib_nocsec + home_pre_sib_nocsec)/2,
@@ -140,7 +141,7 @@ comparisons <- map(genera, function(genus) {
                 csec_nosib = (home_pre_nosib_csec + cc_pre_nosib_csec + home_post_nosib_csec + cc_post_nosib_csec)/4,
                 csecsib_csecnosib = csec_sib - csec_nosib
             ) %>%
-        select(genus, ccpre_homepre, ccpost_ccpre, ccpost_homepost, homepost_homepre, sib_nosib, csec_nocsec, csecsib_csecnosib)
+        select(genus, dpar, ccpre_homepre, ccpost_ccpre, ccpost_homepost, homepost_homepre, sib_nosib, csec_nocsec, csecsib_csecnosib)
             
         
         
@@ -168,6 +169,7 @@ comparisons <- map(genera, function(genus) {
         sigma_group <- plinp_sigma %>%
             mutate(
                 genus = genus, 
+                dpar = "sigma",
                 
                 # ccpre vs homepre 
                 homepre = (home_pre_nosib_nocsec + home_pre_sib_nocsec)/2,
@@ -202,7 +204,7 @@ comparisons <- map(genera, function(genus) {
                 csec_nosib = (home_pre_nosib_csec + cc_pre_nosib_csec + home_post_nosib_csec + cc_post_nosib_csec)/4,
                 csecsib_csecnosib = csec_sib - csec_nosib
             ) %>%
-        select(genus, ccpre_homepre, ccpost_ccpre, ccpost_homepost, homepost_homepre, sib_nosib, csec_nocsec, csecsib_csecnosib)
+        select(genus, dpar, ccpre_homepre, ccpost_ccpre, ccpost_homepost, homepost_homepre, sib_nosib, csec_nocsec, csecsib_csecnosib)
         
         return(list(mu_group, sigma_group))
         
