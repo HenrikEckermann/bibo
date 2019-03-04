@@ -206,7 +206,11 @@ comparisons <- map(genera, function(genus) {
             ) %>%
         select(genus, dpar, ccpre_homepre, ccpost_ccpre, ccpost_homepost, homepost_homepre, sib_nosib, csec_nocsec, csecsib_csecnosib)
         
-        return(list(mu_group, sigma_group))
+        # slopes
+        slopes <- posterior_samples(fit) %>%
+            select(b_age_d_s, b_bf_count_s)
+        
+        return(list(mu_group, sigma_group, slopes))
         
         
           
@@ -216,6 +220,7 @@ comparisons <- map(genera, function(genus) {
         return(NA)
     }
 })
+
 
 
 save(comparisons, exclude_vector, file = glue("{BIBO}/rdata/bayesian_student.rds"))
