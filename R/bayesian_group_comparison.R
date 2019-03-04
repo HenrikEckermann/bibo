@@ -216,5 +216,5 @@ comparisons <- map(genera, function(genus) {
 })
 
 
-save(comparisons, exclude_vector, file = glue("{BIBO}/rdata/bayesian_student.rds")
+save(comparisons, exclude_vector, file = glue("{BIBO}/rdata/bayesian_student.rds"))
 
